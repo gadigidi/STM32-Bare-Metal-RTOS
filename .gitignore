@@ -1,0 +1,68 @@
+# =========================
+# STM32CubeIDE / Eclipse
+# =========================
+
+.metadata/
+.recommenders/
+.settings/
+.classpath
+.launch
+*.launch
+
+# Eclipse local history
+.localhistory/
+
+# =========================
+# Build output
+# =========================
+
+Debug/
+Release/
+build/
+out/
+*.elf
+*.map
+*.hex
+*.bin
+*.lst
+
+# =========================
+# STM32CubeIDE generated
+# =========================
+
+*.ioc
+!.ioc.backup
+*.log
+
+# =========================
+# Toolchain / GCC
+# =========================
+
+*.o
+*.d
+*.su
+*.a
+*.s
+*.obj
+
+# =========================
+# OS / Editor junk
+# =========================
+
+.DS_Store
+Thumbs.db
+*~
+*.swp
+*.swo
+.vscode/
+
+# =========================
+# Debug / Trace
+# =========================
+
+*.svd
+*.dbg
+# =========================
+# My files
+# ========================
+
