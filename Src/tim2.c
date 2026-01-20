@@ -24,7 +24,9 @@ void tim2_enable_interrupt(void) {
     isr_enable_interrupts(TIM2_IRQn);
 }
 
+/*
 void tim2_wait_tick(void){
     //Wait for ST_COUNTFLAG
     while (!(TIM2->SR & TIM2_SR_UIF)) {}
 }
+*/

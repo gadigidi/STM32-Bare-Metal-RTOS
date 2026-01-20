@@ -1,6 +1,8 @@
 #include "gpio.h"
 #include "stm32f446xx.h"
 #include <stdint.h>
+#include <stdbool.h>
+
 //GPIO_TypeDef * GPIO
 void gpio_init(uint32_t enable) {
     //Enable clock access to GPIOA
@@ -23,14 +25,6 @@ void gpio_pin_afr(GPIO_TypeDef *GPIO, int pin, uint8_t af) { // AF0..AF15
 void gpio_pin_pupdr(GPIO_TypeDef *GPIO, int pin) { // AF0..AF15
     GPIO->PUPDR &= ~(3U << (pin * 2));
     GPIO->PUPDR |= (1U << (pin * 2));
-}
-
-void gpio_set_LED(void) {
-    GPIOA->BSRR = LED_PIN;          // LED ON
-}
-
-void gpio_reset_LED(void) {
-    GPIOA->BSRR = (LED_PIN << 16);
 }
 
 int gpio_char_to_int(char letter) {
