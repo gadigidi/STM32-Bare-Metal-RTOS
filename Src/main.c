@@ -1,7 +1,6 @@
 #include "os.h"
-#include "timebase.h"
-#include "user.h"
-#include "exti.h"
+//#include "user.h"
+//#include "exti.h"
 #include <stdio.h>
 #include <stdint.h>
 #include "stm32f446xx.h"
@@ -15,7 +14,7 @@ int main(void){
 
     os_init();
 
-    os_start();
+    os_run();
     
     while (1) {
         //time_now = timebase_show_ms();

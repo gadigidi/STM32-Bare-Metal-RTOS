@@ -14,18 +14,23 @@ void isr_enable_interrupts(int irqn) {
 void isr_disable_interrupts (int irqn) {
     int reg = irqn / 32;
     int offset = irqn % 32;
-    uint32_t mask = NVIC->ISER[reg];
-    mask &= ~(1 << offset);
-    NVIC->ISER[reg] = mask;
+    NVIC->ICER[reg] |= (1U << offset);
 }
 
-void isr_set_priorities(int irqn){
+void isr_set_priority(int irqn, uint8_t priority){
+    NVIC->IP[irqn] = (priority << 15); //NVIC uses only bits [8:4]
+}
 
+
+void isr_set_pendsv_priority(int priority){
+    SCB->SHP[3] |= ~(0xFF << 16);
+    SCB->SHP[3] |= (priority << 20); //bits [23:20]. (bits [19:16] are garbage)
 }
 
 void TIM2_IRQHandler(void) {
     timebase_increase_ms();
     TIM2->SR &= ~TIM2_SR_UIF;
+
     //Turn on PendSV IRQ (software)
     SCB->ICSR |= PENDSVSET;
 }
@@ -64,7 +69,8 @@ __attribute__((naked)) void PendSV_Handler(void){
         "LDR R0, [R1] \n" //R0 = *sp (saved PSP value for current task)
         "LDMIA R0!, {R4-R11} \n" //Load R4-R11 from current stack; update PSP; R0 = new PSP
         "MSR PSP, R0 \n" //PSP = current sp
+        "ISB \n" //Make sure pipeline is loaded with correct data
 
-         "BX LR \n"
+        "BX LR \n"
     );
 }

@@ -21,6 +21,7 @@ uint32_t timebase_show_ms(void) {
     return tim2_ms_cnt;
 }
 
+/*
 void timebase_blocking_delay_ms(uint32_t delay_ms) {
     uint32_t t_start = timebase_show_ms();
     uint32_t t_now = timebase_show_ms();
@@ -28,3 +29,4 @@ void timebase_blocking_delay_ms(uint32_t delay_ms) {
         t_now = timebase_show_ms();
     }
 }
+*/

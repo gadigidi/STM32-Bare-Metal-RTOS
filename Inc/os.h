@@ -18,16 +18,17 @@ typedef struct{
 } tcb_t;
 
 #define OS_TASKS_NUM            TASKS_NUM
-#define OS_TASK_FIRST           TASK_FIRST
+#define OS_FIRST_TASK           FIRST_TASK
 #define OS_STACK_DEPTH          256
 
-
+#define PENDSVCLR               (1U << 27)
+#define PENDSVSET               (1U << 28)
 
 void os_init(void);
 
-void os_delay(void);
+void os_delay(uint32_t delay_ms);
 
-void os_start(void);
+void os_run(void);
 
 
 

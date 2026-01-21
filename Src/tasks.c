@@ -1,9 +1,10 @@
 #include "tasks.h"
+#include "user.h"
 #include <stdint.h>
 
 //User should fill this with tasks names
 task_entry_t task_entry [TASKS_NUM] = {
-        &user_set_btn_flag,
+        &user_auto_toggle_led_task,
         &user_button_toggle_led_task
 };
 

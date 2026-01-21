@@ -14,15 +14,17 @@ void tim2_init(void){
     TIM2->CNT = 0;
 }
 
+void tim2_enable_interrupt(void) {
+    TIM2->DIER |= TIM2_UIEN;
+    isr_enable_interrupts(TIM2_IRQn);
+}
+
 void tim2_enable(void) {
     //Enable timer2
     TIM2->CR1 |= TIM2_CEN;
 }
 
-void tim2_enable_interrupt(void) {
-    TIM2->DIER |= TIM2_UIEN;
-    isr_enable_interrupts(TIM2_IRQn);
-}
+
 
 /*
 void tim2_wait_tick(void){

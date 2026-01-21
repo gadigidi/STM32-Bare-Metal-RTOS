@@ -19,7 +19,7 @@ void user_init(void) {
     //Set EXTI13 for GPIOC
     exti_init();
     exti_enable_irq(USER_BTN_PIN, USER_BTN_PORT);
-    isr_enable_interrupts(EXTI13_IRQn);
+    //isr_enable_interrupts(EXTI13_IRQn);
 }
 
 
@@ -34,11 +34,11 @@ void user_reset_led(void) {
 void user_toggle_led (void) {
     static bool led_is_on = 0;
     if (led_is_on){
-        gpio_reset_led();
+        user_reset_led();
         led_is_on = 0;
     }
     else{
-        gpio_set_led();
+        user_set_led();
         led_is_on = 1;
     }
 }
@@ -63,7 +63,7 @@ void user_button_toggle_led_task (void *arg) {
         if (user_btn_pressed) {
             user_btn_pressed = 0;
             os_delay(USER_BTN_DEBOUNCE_MS);
-            curr_btn_state = (GPIOC->IDR & BTN_PIN) ? 0 : 1; //BTN is active low
+            curr_btn_state = (GPIOC->IDR & USER_BTN_PIN) ? 0 : 1; //BTN is active low
         }
 
         if ((prev_btn_state == 1 ) & (curr_btn_state == 0)) {
