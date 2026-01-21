@@ -3,7 +3,10 @@
 
 #include <stdint.h>
 
+#define PENDSVSET
+
 void isr_enable_interrupts(int irqn);
+void isr_disable_interrupts (int irqn);
 void TIM2_IRQHandler(void);
 void EXTI1_IRQHandler(void);
 void EXTI3_IRQHandler(void);

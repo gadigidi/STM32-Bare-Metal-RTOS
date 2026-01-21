@@ -11,9 +11,23 @@ void isr_enable_interrupts(int irqn) {
     NVIC->ISER[reg] |= (1U << offset);
 }
 
+void isr_disable_interrupts (int irqn) {
+    int reg = irqn / 32;
+    int offset = irqn % 32;
+    uint32_t mask = NVIC->ISER[reg];
+    mask &= ~(1 << offset);
+    NVIC->ISER[reg] = mask;
+}
+
+void isr_set_priorities(int irqn){
+
+}
+
 void TIM2_IRQHandler(void) {
     timebase_increase_ms();
     TIM2->SR &= ~TIM2_SR_UIF;
+    //Turn on PendSV IRQ (software)
+    SCB->ICSR |= PENDSVSET;
 }
 
 void EXTI1_IRQHandler(void) {
@@ -46,8 +60,8 @@ __attribute__((naked)) void PendSV_Handler(void){
 
         //Restore context
         "LDR R1, =current_tcb \n" //R1 = address where sp of current task is stored
-        "LDR R1, [R1] \n" //*sp = PSP
-        "LDR R0, [R1] \n" //R0 = PSP
+        "LDR R1, [R1] \n" //Dereference. R1 = sp
+        "LDR R0, [R1] \n" //R0 = *sp (saved PSP value for current task)
         "LDMIA R0!, {R4-R11} \n" //Load R4-R11 from current stack; update PSP; R0 = new PSP
         "MSR PSP, R0 \n" //PSP = current sp
 
