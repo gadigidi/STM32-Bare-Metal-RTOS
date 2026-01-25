@@ -1,6 +1,6 @@
 # STM32 Bare-Metal RTOS (From Scratch)
 
-> *"it's not demo, it's system"*
+> *"Context switching is an identity swap performed right under the CPU’s nose"*
 
 ## Overview
 This project is a **from-scratch bare-metal RTOS kernel** implemented on an **STM32 (NUCLEO-F446RE)**.
