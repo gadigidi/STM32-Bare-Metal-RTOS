@@ -15,6 +15,8 @@ void user_reset_led(void);
 void user_toggle_led (void);
 void user_toggle_led (void);
 
+void user_set_button_flag(void);
+
 void user_auto_toggle_led_task(void *arg);
 void user_button_toggle_led_task (void *arg);
 

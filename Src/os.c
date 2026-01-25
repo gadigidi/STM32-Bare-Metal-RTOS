@@ -5,6 +5,8 @@
 #include "stm32f446xx.h"
 #include <stdint.h>
 
+#include "stack_debug.h"
+
 typedef struct {
     uint32_t *sp;
     uint32_t data;
@@ -13,28 +15,30 @@ typedef struct {
 //////////////////
 /// prototypes ///
 //////////////////
-void os_error_task(void);
+void os_error_task(void *arg);
 void os_run(void);
 void os_delay(uint32_t delay_ms);
 void os_config_priorities(void);
 //////////////////
 //////////////////
+
 static tcb_t tcb [OS_TASKS_NUM];
 volatile tcb_t * current_tcb;
+
 static uint32_t stack[OS_TASKS_NUM][OS_STACK_DEPTH];
 
 static bool task_ready[OS_TASKS_NUM];
 static int current_task;
 
 stack_line_t * os_push_stack(stack_line_t *stack_line_ptr){
-    stack_line_ptr->sp -= 4;
+    stack_line_ptr->sp --;
     *stack_line_ptr->sp = stack_line_ptr->data;
     return stack_line_ptr;
 }
 
 stack_line_t * os_pop_stack(stack_line_t *stack_line_ptr){
     *stack_line_ptr->sp = stack_line_ptr->data;
-    stack_line_ptr->sp += 4;
+    stack_line_ptr->sp ++;
     return stack_line_ptr;
 }
 
@@ -45,45 +49,58 @@ uint32_t * stack_frame_init (uint32_t *sp, uint32_t *pc, uint32_t arg){
 
     stack_line_ptr->sp = sp;
 
-    //Equivalent to load R0 = arg
-    stack_line_ptr->data = arg;
-    stack_line_ptr = os_push_stack(stack_line_ptr);
-
-    //Equivalent to load R1, R2, R3, R12with initial value 0
-    for (int i = 0; i < 5; i++){
-        stack_line_ptr->data = 0x0 | i | (i<<2) | (i<<4) | (i<<6);
-        stack_line_ptr = os_push_stack(stack_line_ptr);
-    }
-
-    stack_line_ptr->data = (uint32_t)&os_error_task; //LR
+    stack_line_ptr->data = 0x01000000; //xSPR
     stack_line_ptr = os_push_stack(stack_line_ptr);
 
     stack_line_ptr->data = (uint32_t)pc; //PC
     stack_line_ptr = os_push_stack(stack_line_ptr);
 
-    stack_line_ptr->data = 0x01000000; //xSPR
+    stack_line_ptr->data = (uint32_t)& (os_error_task) | 1; //LR
     stack_line_ptr = os_push_stack(stack_line_ptr);
+
+    stack_line_ptr->data = 0x12;
+    stack_line_ptr = os_push_stack(stack_line_ptr);
+
+    stack_line_ptr->data = 0x3;
+    stack_line_ptr = os_push_stack(stack_line_ptr);
+
+    stack_line_ptr->data = 0x2;
+    stack_line_ptr = os_push_stack(stack_line_ptr);
+
+    stack_line_ptr->data = 0x1;
+    stack_line_ptr = os_push_stack(stack_line_ptr);
+
+    //Load R0 = arg
+    stack_line_ptr->data = arg;
+    stack_line_ptr = os_push_stack(stack_line_ptr);
+
+    //Load R4-R11 with data 0x4-0x11
+    uint32_t data = 4;
+    for (int i = 0; i < 8; i++){
+        stack_line_ptr->data = data+i;
+        stack_line_ptr = os_push_stack(stack_line_ptr);
+    }
 
     return stack_line_ptr->sp;
 }
 
 void os_init(void) {
 
-    //timebase_init();
-
-    //isr_disable_interrupts(TIM2_IRQn); //Turn off SysTick for now
-
     os_config_priorities();
 
     for (int i = 0; i < OS_TASKS_NUM; i++){
-        uint32_t pc = (uint32_t)task_entry[i] | 1U; //Need 1 in the lsb for Thumb mode
-        pc = (uint32_t *) pc;
+        uint32_t pc_uint = (uint32_t)task_entry[i] | 1U;
+        uint32_t *pc = (uint32_t *) pc_uint;
         uint32_t *sp = &stack[i][OS_STACK_DEPTH-1];
+        uint32_t sp_uint = (uint32_t) sp & ~(7U); //Align sp to 8
+        sp = (uint32_t *)sp_uint;
         uint32_t arg = (uint32_t) task_arg[i];
         sp = stack_frame_init(sp, pc, arg);
         tcb[i].sp = sp;
         tcb[i].state = OS_READY;
         task_ready[i] = 1;
+
+        stack_debug(sp);
     }
 }
 
@@ -98,6 +115,11 @@ void os_delay(uint32_t delay_ms) {
     current_tcb->state = OS_SLEEP;
 }
 
+uint32_t debug_psp_before_stmbd;
+uint32_t debug_lr_before_switch;
+uint32_t debug_psp_before_switch;
+uint32_t debug_lr_after_switch;
+uint32_t debug_psp_after_switch;
 void os_switch (void){
     uint32_t time_now = timebase_show_ms();
 
@@ -113,32 +135,36 @@ void os_switch (void){
     }
     //bool switch_task = 0;
     for (int i = 0; i < OS_TASKS_NUM; i++){
-        int next_task = (current_task + i) % OS_TASKS_NUM;
+        int next_task = (current_task + i + 1) % OS_TASKS_NUM;
         if (task_ready[next_task] == 1){
-            tcb[current_task].state = OS_READY;
+            //tcb[current_task].state = OS_;
             current_tcb = &tcb[next_task];
-            tcb[next_task].state = OS_RUN;
+uint32_t *current_sp = tcb[current_task].sp;
+stack_debug(current_sp);
             current_task = next_task;
+            tcb[current_task].state = OS_RUN;
             break;
         }
+        //else{
+            //current_task = next_task;
+        //}
     }
 }
 
+//uint32_t debug_psp_before_first_task;
 void os_run(void) {
+    tcb[OS_FIRST_TASK].sp += 32; //Remove SW frame from first task
     current_tcb = &tcb[OS_FIRST_TASK];
     current_tcb->state = OS_RUN;
     timebase_init();
     __asm volatile (
-            "MRS R0, CONTROL \n" //Load R0 with CONTROL data
-            "ORR R0, #2 \n" //SPSELECT = 1
-            "MSR CONTROL, R0 \n" //Store new value in CONTROL
-            "ISB \n" //Make sure pipeline is loaded with correct data
+            "SVC 0 \n"
     );
 
-    SCB->ICSR |= PENDSVSET; //Trigger PendSV to start context switch flow
+    //SCB->ICSR |= PENDSVSET; //Trigger PendSV to start context switch flow
 }
 
-void os_error_task(void){
+void os_error_task(void *arg){
     while(1){
         //Dead end
     }

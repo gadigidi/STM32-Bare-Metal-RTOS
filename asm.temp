@@ -1,0 +1,5 @@
+"MRS R0, PSP \n"
+"STMDB R0!, {R4-R11} \n"
+"LDR R1, =current_tcb \n"
+"LDR R1, [R1] \n"
+"STR R0, [R1] \n"
