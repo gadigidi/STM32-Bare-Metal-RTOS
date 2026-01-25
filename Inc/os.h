@@ -14,8 +14,10 @@ typedef struct{
     uint32_t * sp;
     os_state_t state;
     uint32_t delay_start;
-    uint8_t delay_ms;
+    uint32_t delay_ms;
 } tcb_t;
+
+extern volatile tcb_t *current_tcb;
 
 #define OS_TASKS_NUM            TASKS_NUM
 #define OS_FIRST_TASK           FIRST_TASK

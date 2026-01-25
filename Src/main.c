@@ -1,16 +1,12 @@
 #include "os.h"
-//#include "user.h"
-//#include "exti.h"
+#include "user.h"
 #include <stdio.h>
 #include <stdint.h>
 #include "stm32f446xx.h"
 
 
-
-user_init(); //Enable user LED and user BTN
-
-
 int main(void){
+    user_init(); //Enable user LED and user BTN
 
     os_init();
 

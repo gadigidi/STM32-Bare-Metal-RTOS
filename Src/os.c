@@ -23,7 +23,7 @@ void os_config_priorities(void);
 //////////////////
 
 static tcb_t tcb [OS_TASKS_NUM];
-volatile tcb_t * current_tcb;
+volatile tcb_t *current_tcb;
 
 static uint32_t stack[OS_TASKS_NUM][OS_STACK_DEPTH];
 
@@ -100,7 +100,7 @@ void os_init(void) {
         tcb[i].state = OS_READY;
         task_ready[i] = 1;
 
-        stack_debug(sp);
+        //stack_debug(sp);
     }
 }
 
@@ -113,13 +113,9 @@ void os_delay(uint32_t delay_ms) {
     current_tcb->delay_start = timebase_show_ms();
     current_tcb->delay_ms = delay_ms;
     current_tcb->state = OS_SLEEP;
+    SCB->ICSR |= PENDSVSET;
 }
 
-uint32_t debug_psp_before_stmbd;
-uint32_t debug_lr_before_switch;
-uint32_t debug_psp_before_switch;
-uint32_t debug_lr_after_switch;
-uint32_t debug_psp_after_switch;
 void os_switch (void){
     uint32_t time_now = timebase_show_ms();
 
@@ -129,31 +125,29 @@ void os_switch (void){
                 tcb[i].state = OS_READY;
                 task_ready[i] = 1;
             }
+            else { //if time_delay didn't passed yet
+                task_ready[i] = 0;
+            }
         } else{ //if task is currently running or ready
             tcb[i].state = OS_READY;
         }
     }
+
     //bool switch_task = 0;
     for (int i = 0; i < OS_TASKS_NUM; i++){
         int next_task = (current_task + i + 1) % OS_TASKS_NUM;
         if (task_ready[next_task] == 1){
-            //tcb[current_task].state = OS_;
             current_tcb = &tcb[next_task];
-uint32_t *current_sp = tcb[current_task].sp;
-stack_debug(current_sp);
             current_task = next_task;
             tcb[current_task].state = OS_RUN;
             break;
         }
-        //else{
-            //current_task = next_task;
-        //}
     }
 }
 
 //uint32_t debug_psp_before_first_task;
 void os_run(void) {
-    tcb[OS_FIRST_TASK].sp += 32; //Remove SW frame from first task
+    tcb[OS_FIRST_TASK].sp += 8; //Remove SW frame from first task
     current_tcb = &tcb[OS_FIRST_TASK];
     current_tcb->state = OS_RUN;
     timebase_init();
@@ -166,6 +160,8 @@ void os_run(void) {
 
 void os_error_task(void *arg){
     while(1){
+        uint32_t time_now = timebase_show_ms();
+        (void) time_now;
         //Dead end
     }
 }

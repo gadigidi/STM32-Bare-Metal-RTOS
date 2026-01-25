@@ -50,7 +50,7 @@ void stack_debug (uint32_t * stack){
 
     uint32_t stack_15 = stack[15];
     (void) stack_15;
-
+/*
     uint32_t stack_16 = stack[16];
     (void) stack_16;
 
@@ -98,7 +98,7 @@ void stack_debug (uint32_t * stack){
 
     uint32_t stack_31 = stack[31];
     (void) stack_31;
-
+*/
     int breakpoint = 1;
     (void) breakpoint;
 

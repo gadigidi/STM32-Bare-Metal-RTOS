@@ -1,5 +1,6 @@
 #include "tasks.h"
 #include "user.h"
+#include "timebase.h"
 #include <stdint.h>
 
 //User should fill this with tasks names
@@ -17,7 +18,10 @@ task_arg_t task_arg[TASKS_NUM] = {
 };
 
 void idle_task(void *arg){
+    uint32_t time_now;
+    (void) time_now;
     while(1){
+        time_now = timebase_show_ms();
         //Dead end
     }
 }

@@ -6,5 +6,5 @@
 
 void exti_clean_flag(int line);
 void exti_init(void);
-void exti_enable_irq(int line, char gpio_letter); //Line, Port
+void exti_enable_irq(char gpio_letter, int line, int isr_flag); //Port, Line, ISR enable_simbole
 #endif /* EXTI_H_ */
