@@ -23,28 +23,26 @@ The goal is to demonstrate **how a Cortex-M system actually works under the hood
 
 ---
 
-## System Architecture
+### System Architecture
 
-User Tasks
-|
-+-- Task A (example)
-+-- Task B (example)
-+-- Idle Task
-|
-RTOS Kernel
-|
-+-- Scheduler (time & state based)
-+-- PendSV Context Switch
-+-- Task Control Blocks (TCB)
-+-- Stack Management
-|
-Hardware Layer
-|
-+-- Timer (SysTick / TIM)
-+-- NVIC
-+-- GPIO (for visible task behavior)
-|
-MCU Hardware (STM32F446)
+**User Tasks**
+- Task A (example)
+- Task B (example)
+- Idle Task
+
+**RTOS Kernel**
+- Scheduler (time & state based)
+- PendSV context switch
+- Task Control Blocks (TCB)
+- Stack management
+
+**Hardware Layer**
+- Timer (SysTick / TIM)
+- NVIC
+- GPIO (for visible task behavior)
+
+**MCU Hardware**
+- STM32F446
 
 ---
 
