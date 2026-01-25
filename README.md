@@ -26,18 +26,19 @@ The goal is to demonstrate **how a Cortex-M system actually works under the hood
 ### System Architecture
 
 **User Tasks**
-- Task A (example)
-- Task B (example)
-- Idle Task
+- Task A (user LED toggling)
+- Task B (user button changing frequency)
+- Idle task
 
 **RTOS Kernel**
-- Scheduler (time & state based)
+- Scheduler
+- SVC for first-task kickoff
 - PendSV context switch
 - Task Control Blocks (TCB)
 - Stack management
 
 **Hardware Layer**
-- Timer (SysTick / TIM)
+- Timer (TIM2 as the time base)
 - NVIC
 - GPIO (for visible task behavior)
 
