@@ -2,6 +2,8 @@
 
 > *Context switching is an identity swap performed right under the CPU’s nose.*
 
+![os switch context scheme](Documents/OS_scheme.jpg)
+
 ## Overview
 This project is a **from-scratch bare-metal RTOS kernel** implemented on an **STM32 (NUCLEO-F446RE)**.
 
@@ -40,7 +42,7 @@ The goal is to demonstrate **how a Cortex-M system actually works under the hood
 **Hardware Layer**
 - Timer (TIM2 as the time base)
 - NVIC
-- GPIO (for visible task behavior)
+- GPIO and EXTI (for visible task behavior)
 
 **MCU Hardware**
 - STM32F446

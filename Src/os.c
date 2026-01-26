@@ -58,23 +58,23 @@ uint32_t * stack_frame_init (uint32_t *sp, uint32_t *pc, uint32_t arg){
     stack_line_ptr->data = (uint32_t)& (os_error_task) | 1; //LR
     stack_line_ptr = os_push_stack(stack_line_ptr);
 
-    stack_line_ptr->data = 0x12;
+    stack_line_ptr->data = 0xc; //R12
     stack_line_ptr = os_push_stack(stack_line_ptr);
 
-    stack_line_ptr->data = 0x3;
+    stack_line_ptr->data = 0x3; //R3
     stack_line_ptr = os_push_stack(stack_line_ptr);
 
-    stack_line_ptr->data = 0x2;
+    stack_line_ptr->data = 0x2; //R2
     stack_line_ptr = os_push_stack(stack_line_ptr);
 
-    stack_line_ptr->data = 0x1;
+    stack_line_ptr->data = 0x1; //R1
     stack_line_ptr = os_push_stack(stack_line_ptr);
 
     //Load R0 = arg
     stack_line_ptr->data = arg;
     stack_line_ptr = os_push_stack(stack_line_ptr);
 
-    //Load R4-R11 with data 0x4-0x11
+    //Load R4-R11 with data 0x4-0xb
     uint32_t data = 4;
     for (int i = 0; i < 8; i++){
         stack_line_ptr->data = data+i;
