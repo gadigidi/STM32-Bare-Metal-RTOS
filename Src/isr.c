@@ -2,7 +2,7 @@
 #include "os.h"
 #include "tim2.h"
 #include "timebase.h"
-#include "user.h"
+//#include "user.h"
 #include "stack_debug.h"
 #include "stm32f446xx.h"
 #include <stdint.h>
@@ -10,13 +10,13 @@
 void isr_enable_interrupts(int irqn) {
     int reg = irqn / 32;
     int offset = irqn % 32;
-    NVIC->ISER[reg] |= (1U << offset);
+    NVIC->ISER[reg] = (1U << offset);
 }
 
 void isr_disable_interrupts (int irqn) {
     int reg = irqn / 32;
     int offset = irqn % 32;
-    NVIC->ICER[reg] |= (1U << offset);
+    NVIC->ICER[reg] = (1U << offset);
 }
 
 void isr_set_priority(int irqn, uint8_t priority){
@@ -42,11 +42,21 @@ void EXTI1_IRQHandler(void) {
     }
 }
 
+static volatile bool exti15_10_event = 0;
 void EXTI15_10_IRQHandler(void) {
     if (EXTI->PR & (1U << 13)) {
         EXTI->PR = (1U << 13); //Clear HW flag
-        user_set_button_flag(); //Turn on SW flag
+        exti15_10_event = 1;
+        NVIC->ICER[1] = (1U << 8); //Turn off this ISR for de-baunce
     }
+}
+
+volatile bool isr_show_exti15_10_pending_status(void){
+	return exti15_10_event;
+}
+
+void isr_clear_exti15_10_pending_status(void){
+	exti15_10_event = 0;
 }
 
 //uint32_t debug_psp_before_stmbd;
