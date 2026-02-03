@@ -31,9 +31,9 @@ void exti_enable_irq(char gpio_letter, int line, int isr_flag) {
     //Config IRQ sensetivity = active low (falling_edge only)
     EXTI->RTSR &= ~(1U << line);
     EXTI->FTSR |= (1U << line);
+
     //Clean old PR before anabling
     exti_clean_flag(line);
-
     isr_enable_interrupts(isr_flag);
 
 }
