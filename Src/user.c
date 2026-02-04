@@ -56,7 +56,7 @@ void user_auto_toggle_led_task(void *arg) {
     }
 }
 
-void user_button_toggle_led_task(void *arg) {
+void user_button_change_frequency_task(void *arg) {
     static uint32_t counter = 0;
     static uint32_t time_now = 0;
     (void) time_now;
@@ -71,7 +71,7 @@ void user_button_toggle_led_task(void *arg) {
         counter++;
 
         exti_clean_flag(USER_BTN_PIN); //Clear HW flag
-        isr_enable_interrupts(EXTI15_10_IRQn); //Re-enable ISR
+        isr_enable_interrupt(EXTI15_10_IRQn); //Re-enable ISR
     }
 }
 

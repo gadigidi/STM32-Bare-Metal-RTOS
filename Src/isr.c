@@ -6,13 +6,13 @@
 #include "stm32f446xx.h"
 #include <stdint.h>
 
-void isr_enable_interrupts(int irqn) {
+void isr_enable_interrupt(int irqn) {
     int reg = irqn / 32;
     int offset = irqn % 32;
     NVIC->ISER[reg] = (1U << offset);
 }
 
-void isr_disable_interrupts (int irqn) {
+void isr_disable_interrupt(int irqn) {
     int reg = irqn / 32;
     int offset = irqn % 32;
     NVIC->ICER[reg] = (1U << offset);

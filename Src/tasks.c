@@ -11,7 +11,7 @@
 //User should fill this with tasks names
 task_entry_t task_entry [USER_TASKS_NUM] = {
         &user_auto_toggle_led_task,
-        &user_button_toggle_led_task,
+        &user_button_change_frequency_task,
 };
 
 //User should fill this with tasks arg in same order

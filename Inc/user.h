@@ -17,6 +17,6 @@ void user_toggle_led (void);
 void user_set_button_flag(void);
 
 void user_auto_toggle_led_task(void *arg);
-void user_button_toggle_led_task (void *arg);
+void user_button_change_frequency_task(void *arg);
 
 #endif /* USER_H_ */

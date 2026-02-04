@@ -135,8 +135,10 @@ void os_wait_sem(semaphore_t *semaphore) {
     static bool need_resched = 0;
     __disable_irq();
     if (semaphore->count > 0) {
-        semaphore->count--;
-    } else {
+        if (!(semaphore->sem_tasks_list)) { //If this task is only consumer of this semaphore
+            semaphore->count--;
+        }
+    } else { //No semaphore pending
         semaphore->sem_tasks_list |= (1 << (current_tcb->index));
         current_tcb->sem = semaphore;
         current_tcb->state = OS_WAIT;
@@ -159,39 +161,39 @@ void os_switch(void) {
     uint32_t time_now = timebase_show_ms();
 
     for (int i = 0; i < USER_TASKS_NUM; i++) {
-        if (tcb[i].state == OS_SLEEP) {
+        if (tcb[i].state == OS_SLEEP) { //If task is in delay state
             if ((time_now - tcb[i].delay_start) >= tcb[i].delay_ms) {
                 tcb[i].state = OS_READY;
                 task_ready[i] = 1;
-            } else { //if time_delay didn't passed yet
+            } else { //If time_delay didn't passed yet
                 task_ready[i] = 0;
             }
-        } else if (tcb[i].state == OS_WAIT) { //if task is currently running or ready
+        } else if (tcb[i].state == OS_WAIT) { //If task is in wait for semaphore state
             if ((tcb[i].sem->count) > 0) {
-                if (!(tcb[i].sem->sem_tasks_list &= ~(1 << i))) { //if this task is only consumer
+                if (!(tcb[i].sem->sem_tasks_list &= ~(1 << i))) { //If this task is only consumer
                     tcb[i].sem->count--;
                 }
                 tcb[i].sem->sem_tasks_list &= ~(1 << i); //Remove task from semaphore list
                 tcb[i].state = OS_READY;
                 task_ready[i] = 1;
-            } else { //if no pending semaphore for this task
+            } else { //If no pending semaphore for this task
                 task_ready[i] = 0;
             }
         }
     }
 
-    bool reguilar_task_run = 0;
+    bool user_task_run = 0;
     for (int i = 0; i < USER_TASKS_NUM; i++) {
         int next_task = (current_task + i + 1) % USER_TASKS_NUM;
         if (task_ready[next_task] == 1) {
             current_tcb = &tcb[next_task];
             current_task = next_task;
             tcb[current_task].state = OS_RUN;
-            reguilar_task_run = 1;
+            user_task_run = 1;
             break;
         }
     }
-    if (!reguilar_task_run) {
+    if (!user_task_run) {
         current_tcb = &tcb[OS_IDLE_TASK]; //Run idle task if no other task ready
         current_task = OS_IDLE_TASK;
         tcb[current_task].state = OS_RUN;

@@ -4,8 +4,8 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-void isr_enable_interrupts(int irqn);
-void isr_disable_interrupts (int irqn);
+void isr_enable_interrupt(int irqn);
+void isr_disable_interrupt(int irqn);
 void isr_set_priority(int irqn, uint8_t priority);
 void isr_set_pendsv_priority(int priority);
 

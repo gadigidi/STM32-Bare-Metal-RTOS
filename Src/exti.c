@@ -34,6 +34,6 @@ void exti_enable_irq(char gpio_letter, int line, int isr_flag) {
 
     //Clean old PR before anabling
     exti_clean_flag(line);
-    isr_enable_interrupts(isr_flag);
+    isr_enable_interrupt(isr_flag);
 
 }
