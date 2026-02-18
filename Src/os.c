@@ -19,6 +19,9 @@ typedef struct {
 /// semaphores ///
 //////////////////
 semaphore_t user_button_sem;
+semaphore_t i2c_master_done_sem;
+semaphore_t i2c_slave_done_sem;
+
 
 //////////////////
 /// variables ////

@@ -22,6 +22,13 @@ typedef struct {
     semaphore_t *sem;
 } tcb_t;
 
+typedef struct {
+    uint8_t *buf;
+    uint16_t size;
+    volatile uint16_t head;
+    volatile uint16_t tail;
+} ring_buf_t;
+
 #define OS_TASKS_NUM            USER_TASKS_NUM + 1
 #define OS_IDLE_TASK            USER_TASKS_NUM //Idle task always last
 #define OS_FIRST_TASK           FIRST_TASK
@@ -36,6 +43,7 @@ extern volatile tcb_t *current_tcb;
 /// semaphores ///
 //////////////////
 extern semaphore_t user_button_sem;
+extern semaphore_t i2c_master_done_sem;
 
 //////////////////
 

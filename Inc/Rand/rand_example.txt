@@ -1,0 +1,23 @@
+#include "lfsr_simple.h"
+#include "rand_weighted.h"
+
+int main(void)
+{
+    lfsr_init(0xACE1u); // seed קבוע, בלי שעון
+
+    uint8_t weights[] = {50, 30, 15, 5};
+
+    while (1)
+    {
+        uint8_t event = rand_weighted(weights, 4);
+
+        switch(event)
+        {
+            case 0: send_packet_A(); break;
+            case 1: send_packet_B(); break;
+            case 2: send_packet_C(); break;
+            case 3: send_packet_D(); break;
+        }
+    }
+}
+

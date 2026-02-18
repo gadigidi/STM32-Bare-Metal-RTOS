@@ -2,6 +2,8 @@
 #include "os.h"
 #include "tim2.h"
 #include "timebase.h"
+#include "i2c.h"
+#include "i2c_m.h"
 #include "stack_debug.h"
 #include "stm32f446xx.h"
 #include <stdint.h>
@@ -49,6 +51,33 @@ void EXTI15_10_IRQHandler(void) {
     }
 }
 
+///////////////////////////////
+//////    I2C Handlers   //////
+///////////////////////////////
+void I2C1_EV_IRQHandler (void){
+    i2c_master_driver();
+}
+
+void I2C1_ER_IRQHandler (void){
+    isr_disable_interrupt(I2C1_EV_IRQn);
+    isr_disable_interrupt(I2C1_ER_IRQn);
+    *i2c_master_cb.master_driver_state = M_DRVR_ERROR;
+    i2c_master_driver();
+}
+
+void I2C3_EV_IRQHandler(void){
+
+}
+
+void I2C3_ER_IRQHandler(void){
+
+}
+
+
+
+///////////////////////////////
+///////    SV Handlers   //////
+///////////////////////////////
 
 //uint32_t debug_psp_before_stmbd;
 //uint32_t debug_lr_before_switch;

@@ -1,6 +1,8 @@
 #include "tasks.h"
 #include "user.h"
+#include "i2c_m.h"
 #include "timebase.h"
+#include "stm32f446xx.h"
 #include <stdint.h>
 
 
@@ -12,12 +14,14 @@
 task_entry_t task_entry [USER_TASKS_NUM] = {
         &user_auto_toggle_led_task,
         &user_button_change_frequency_task,
+        &i2c_master_task,
 };
 
 //User should fill this with tasks arg in same order
 task_arg_t task_arg[USER_TASKS_NUM] = {
         0,
         0,
+        I2C_MASTER,
 };
 
 
