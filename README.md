@@ -56,10 +56,19 @@ The goal is to demonstrate **how a Cortex-M system works under the hood**, not j
 To validate the kernel under a realistic peripheral workload, the project includes an
 **I2C Master Write-only driver**, implemented as a fully **ISR-driven finite state machine**.
 
+### Hierarchical Dual-FSM Design (Task + ISR)
+
+- A **transaction-level FSM**, running as an RTOS task, prepares and schedules I2C transfer requests.
+- A **driver-level FSM**, running entirely inside the I2C ISR, advances strictly on hardware events
+  (**SB / ADDR / TXE / BTF**).
+
+This structure cleanly separates **orchestration (task world)** from **execution (interrupt world)**,
+with **no polling loops** and no blocking delays.
+
 Design principles:
 
 - The task only submits a transaction request (buffer + length)
-- The I2C peripheral generates hardware events (SB, ADDR, TXE, BTF)
+- The I2C peripheral generates hardware events
 - The ISR advances the driver state machine step-by-step
 - No polling loops, no blocking delays
 
@@ -90,4 +99,3 @@ The emphasis is not only on making it run — but on understanding **why it runs
 
 ## Status
 Actively evolving — features are added only after full understanding and validation.
-
