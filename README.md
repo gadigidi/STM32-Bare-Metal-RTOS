@@ -5,100 +5,92 @@
 ![os switch context scheme](Documents/OS_scheme.jpg)
 
 ## Overview
-This repository contains a **from-scratch bare-metal RTOS kernel** running on an **STM32 NUCLEO-F446RE (Cortex-M4)**.
 
-The focus is the **kernel itself** — scheduling, context switching, stack control, and interrupt-driven execution — without relying on FreeRTOS, CMSIS-OS, or any existing RTOS framework.
+A **from-scratch bare-metal RTOS kernel** running on **STM32 NUCLEO-F446RE (Cortex-M4)**.
 
-The goal is to demonstrate **how a Cortex-M system works under the hood**, not just how to use one.
+The project focuses on how a Cortex-M actually works: manual scheduling, context switching, stack control, and interrupt-driven execution — without FreeRTOS, CMSIS-OS, or external frameworks.
 
 ---
 
-## Key Features
-- Pure **bare-metal RTOS kernel**
-- Manual context switching using **PendSV**
+## Kernel Highlights
+
+- Pure bare-metal implementation  
+- Manual context switching via **PendSV**
 - Explicit **PSP / MSP** separation
-- Handcrafted task stack frames (fake exception frames)
-- Deterministic and inspectable scheduler behavior
-- Hardware-first, debugger-driven development approach
+- Handcrafted initial stack frames (fake exception frames)
+- Deterministic scheduler behavior
+- Debugger-driven, hardware-first development
 
 ---
 
-## System Architecture
+## Architecture
 
-**RTOS Kernel**
-- Scheduler + time base (TIM2)
-- SVC for first-task kickoff
-- PendSV context switching
-- Task Control Blocks (TCBs)
-- Explicit stack management
+### RTOS Core
+- TIM2 time base  
+- SVC for first task start  
+- PendSV context switching  
+- TCB array + explicit stack management  
 
-**User Tasks**
-- LED task (visible execution)
-- Button task (external interrupt stimulus)
-- **I2C Master task (interrupt-driven peripheral workload)**
-- Idle task
+### Tasks
+- LED task  
+- Button (EXTI) task  
+- **Interrupt-driven I2C Master task**
+- Idle task  
 
 ---
 
 ## Context Switching Model
-- PendSV runs at the lowest priority
-- Software saves **R4–R11**
-- Hardware automatically stacks:
-  **R0–R3, R12, LR, PC, xPSR**
-- Tasks start from a **fake exception frame**, identical to a real interrupt return
+
+- Hardware stacks: **R0–R3, R12, LR, PC, xPSR**
+- Software saves: **R4–R11**
+- Tasks begin from a synthetic exception frame  
+- PendSV runs at lowest priority
 
 > *Context switching is a chain — if the first task is broken, the next one never starts.*
 
 ---
 
-## Interrupt-Driven I2C Master (V1)
+## Interrupt-Driven I2C Master (Write-Only, V1)
 
-To validate the kernel under a realistic peripheral workload, the project includes an
-**I2C Master Write-only driver**, implemented as a fully **ISR-driven finite state machine**.
+The kernel is validated using a realistic peripheral workload: an **ISR-driven I2C Master FSM**.
 
 ![I2C Master transmitter FSM](Documents/I2C_MASTER_FSM.jpg)
 
-### Hierarchical Dual-FSM Design (Task + ISR)
+### Dual-FSM Structure
 
-- A **transaction-level FSM**, running as an RTOS task, prepares and schedules I2C transfer requests.
-- A **driver-level FSM**, running entirely inside the I2C ISR, advances strictly on hardware events
-  (**SB / ADDR / TXE / BTF**).
+- **Task-level FSM**: prepares transaction (buffer + length)
+- **ISR-level FSM**: advances strictly on hardware events (**SB / ADDR / TXE / BTF**)
 
-This structure cleanly separates **orchestration (task world)** from **execution (interrupt world)**,
-with **no polling loops** and no blocking delays.
+No polling.  
+No blocking delays.  
+Pure interrupt choreography.
 
-Design principles:
-
-- The task only submits a transaction request (buffer + length)
-- The I2C peripheral generates hardware events
-- The ISR advances the driver state machine step-by-step
-- No polling loops, no blocking delays
-
-This creates a true embedded scenario where **interrupt timing and scheduling interact directly**.
-
-> *On microcontrollers, parallelism is an art — interrupts are the choreography.*
+> *On microcontrollers, parallelism is an art.*
 
 ---
 
-## Debugging & Bring-Up Focus
-This project intentionally tackles real system-level issues:
-- HardFault root-cause analysis
-- Stack alignment and corruption bugs
-- Exception return edge cases
-- Safe PSP/MSP transitions under interrupt load
+## Debugging Focus
 
-The emphasis is not only on making it run — but on understanding **why it runs**.
+- HardFault root-cause analysis  
+- Stack corruption and alignment  
+- Exception return edge cases  
+- Safe PSP/MSP transitions under interrupt load  
+
+The goal is not just to make it run — but to understand why it runs.
 
 ---
 
 ## Hardware
-- STM32 NUCLEO-F446RE
-- GPIO + EXTI for visible task behavior
-- TIM2 as scheduler time base
-- I2C peripheral as an interrupt-driven workload
+
+- STM32 NUCLEO-F446RE  
+- TIM2 scheduler tick  
+- GPIO + EXTI  
+- I2C peripheral workload  
 
 ---
 
 ## Status
-Actively evolving — features are added only after full understanding and validation.
+
+Actively evolving.  
+Features are added only after full architectural validation.
 
