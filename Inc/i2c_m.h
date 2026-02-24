@@ -20,10 +20,9 @@ typedef enum {
     M_DRVR_SEND_ADDR_W,
     M_DRVR_WAIT_ADDR_W,
     M_DRVR_WAIT_TXE,
-    M_DRVR_TX_BYTE,
+    M_DRVR_TX_SEND_BYTE,
     M_DRVR_TX_WAIT_BTF,
     M_DRVR_GEN_STOP,
-    M_DRVR_TX_BYTE_DONE,
     M_DRVR_ERROR,
 } i2c_master_driver_state_t;
 

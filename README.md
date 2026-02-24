@@ -56,6 +56,8 @@ The goal is to demonstrate **how a Cortex-M system works under the hood**, not j
 To validate the kernel under a realistic peripheral workload, the project includes an
 **I2C Master Write-only driver**, implemented as a fully **ISR-driven finite state machine**.
 
+![I2C Master transmitter FSM](Documents/I2C_MASTER_FSM.jpg)
+
 ### Hierarchical Dual-FSM Design (Task + ISR)
 
 - A **transaction-level FSM**, running as an RTOS task, prepares and schedules I2C transfer requests.
@@ -99,3 +101,4 @@ The emphasis is not only on making it run — but on understanding **why it runs
 
 ## Status
 Actively evolving — features are added only after full understanding and validation.
+

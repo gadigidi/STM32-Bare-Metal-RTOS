@@ -64,7 +64,7 @@ void i2c_master_task (void* arg) {
             uint32_t time_now = timebase_show_ms(); //Debug
             os_delay(5);
             time_now = timebase_show_ms(); //Debug
-
+            (void) time_now;
             uint8_t event = lfsr_next() % 2;
             if (event>0){ //Get random event
                 master_task_state = M_TASK_INITIATE_TRANS;
@@ -119,6 +119,8 @@ void i2c_master_task (void* arg) {
 }
 
 //This FSM function will be called directly from I2C ISRs (EV + ER)
+//The fall through in some states is to avoid situations where flag is already set
+//In situation like that no new interrupt will occur later for that flag
 void i2c_master_driver(void) {
     static int i;
     switch (*i2c_master_cb.master_driver_state) {
@@ -126,6 +128,7 @@ void i2c_master_driver(void) {
         if (I2C_MASTER_AGENT->SR1 & I2C_SR1_SB){
             i = 0;
             *i2c_master_cb.master_driver_state = M_DRVR_SEND_ADDR_W;
+            //Fall through to next state
         }
         else{
             break;
@@ -136,13 +139,16 @@ void i2c_master_driver(void) {
         uint8_t byte = i2c_master_cb.ctx->addr;
         i2c_send_tx_byte(I2C_MASTER_AGENT, byte);
         *i2c_master_cb.master_driver_state = M_DRVR_WAIT_ADDR_W;
-        //Fall through to next state
+        return;
     }
 
     case M_DRVR_WAIT_ADDR_W: {
         if (I2C_MASTER_AGENT->SR1 & I2C_SR1_ADDR){
-            uint8_t temp = I2C_MASTER_AGENT->SR2; //Must read both SR1 and SR2
+            volatile uint32_t temp = I2C_MASTER_AGENT->SR1;
+            temp = I2C_MASTER_AGENT->SR2; //Must read both SR1 and SR2 to clean ADDR flag
+            (void) temp;
             *i2c_master_cb.master_driver_state = M_DRVR_WAIT_TXE;
+            //Fall through to next state
         }
         else{
             break;
@@ -151,23 +157,32 @@ void i2c_master_driver(void) {
 
     case M_DRVR_WAIT_TXE: {
         if (I2C_MASTER_AGENT->SR1 & I2C_SR1_TXE){
-            *i2c_master_cb.master_driver_state = M_DRVR_TX_BYTE;
+            *i2c_master_cb.master_driver_state = M_DRVR_TX_SEND_BYTE;
+            //Fall through to next state
         }
         else{
             break;
         }
     }
 
-    case M_DRVR_TX_BYTE: {
+    case M_DRVR_TX_SEND_BYTE: {
         uint8_t byte = i2c_master_cb.ctx->tx_buffer[i];
         i2c_send_tx_byte(I2C_MASTER_AGENT, byte);
-        *i2c_master_cb.master_driver_state = M_DRVR_TX_WAIT_BTF;
-        //Fall through to next state
+        i++;
+        if (i < i2c_master_cb.ctx->tx_length){
+            *i2c_master_cb.master_driver_state = M_DRVR_WAIT_TXE;
+            return;
+        }
+        else{
+            *i2c_master_cb.master_driver_state = M_DRVR_TX_WAIT_BTF;
+            return;
+        }
     }
 
     case M_DRVR_TX_WAIT_BTF: {
         if (I2C_MASTER_AGENT->SR1 & I2C_SR1_BTF){
             *i2c_master_cb.master_driver_state = M_DRVR_GEN_STOP;
+            //Fall through to next state
         }
         else{
             break;
@@ -176,27 +191,16 @@ void i2c_master_driver(void) {
 
     case M_DRVR_GEN_STOP: {
         i2c_gen_stop(I2C_MASTER_AGENT);
-        *i2c_master_cb.master_driver_state = M_DRVR_TX_BYTE_DONE;
-        //Fall through to next state
-    }
-
-    case M_DRVR_TX_BYTE_DONE: {
-        i++;
-        if (i < i2c_master_cb.ctx->tx_length){
-            *i2c_master_cb.master_driver_state = M_DRVR_TX_BYTE;
-        }
-        else{
-            os_sem_update(i2c_master_cb.sem);
-            *i2c_master_cb.master_driver_state = M_DRVR_IDLE;
-        }
-        break;
+        *i2c_master_cb.master_driver_state = M_DRVR_IDLE;
+        os_sem_update(i2c_master_cb.sem);
+        return;
     }
 
     case M_DRVR_ERROR: { //Landing in this state come from I2C_ER_Handler
         i2c_master_cb.error = 1; //Let task know error occur
-        os_sem_update(i2c_master_cb.sem);
         *i2c_master_cb.master_driver_state = M_DRVR_IDLE;
-        break;
+        os_sem_update(i2c_master_cb.sem);
+        return;
     }
 
     }
