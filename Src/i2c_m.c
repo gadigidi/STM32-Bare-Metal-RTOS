@@ -192,14 +192,14 @@ void i2c_master_driver(void) {
     case M_DRVR_GEN_STOP: {
         i2c_gen_stop(I2C_MASTER_AGENT);
         *i2c_master_cb.master_driver_state = M_DRVR_IDLE;
-        os_sem_update(i2c_master_cb.sem);
+        os_give_sem(i2c_master_cb.sem);
         return;
     }
 
     case M_DRVR_ERROR: { //Landing in this state come from I2C_ER_Handler
         i2c_master_cb.error = 1; //Let task know error occur
         *i2c_master_cb.master_driver_state = M_DRVR_IDLE;
-        os_sem_update(i2c_master_cb.sem);
+        os_give_sem(i2c_master_cb.sem);
         return;
     }
 

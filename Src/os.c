@@ -154,7 +154,7 @@ void os_wait_sem(semaphore_t *semaphore) {
     }
 }
 
-void os_sem_update(semaphore_t *semaphore) {
+void os_give_sem(semaphore_t *semaphore) {
     semaphore->count++;
 
     SCB->ICSR |= PENDSVSET; //Assert PendSV

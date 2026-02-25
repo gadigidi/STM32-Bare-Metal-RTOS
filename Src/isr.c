@@ -47,7 +47,7 @@ void EXTI15_10_IRQHandler(void) {
     if (EXTI->PR & (1U << 13)) {
         EXTI->PR = (1U << 13); //Clear HW flag
         NVIC->ICER[1] = (1U << 8); //Turn off this ISR for de-baunce
-        os_sem_update(&user_button_sem);
+        os_give_sem(&user_button_sem);
     }
 }
 

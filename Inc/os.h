@@ -54,6 +54,6 @@ void os_init(void);
 void os_delay(uint32_t delay_ms);
 void os_run(void);
 void os_wait_sem(semaphore_t *semaphore);
-void os_sem_update(semaphore_t *semaphore);
+void os_give_sem(semaphore_t *semaphore);
 
 #endif /* OS_H_ */
