@@ -56,13 +56,13 @@ void i2c_master_clear_busy(){
 }
 */
 
-void i2c_master_task (void* arg) {
+void i2c_master_task (void *arg) {
     static i2c_master_task_state_t master_task_state = M_TASK_IDLE;
     while (1){
         switch (master_task_state) {
         case M_TASK_IDLE: {
             uint32_t time_now = timebase_show_ms(); //Debug
-            os_delay(5);
+            os_delay(20);
             time_now = timebase_show_ms(); //Debug
             (void) time_now;
             uint8_t event = lfsr_next() % 2;
@@ -90,7 +90,11 @@ void i2c_master_task (void* arg) {
         }
 
         case M_TASK_WAIT_TRANS_DONE: {
-            os_wait_sem(i2c_master_cb.sem);
+            bool success = 0;
+            while (!success){
+                success = os_wait_sem(i2c_master_cb.sem);
+                os_delay(5);
+            }
             master_task_state = M_TASK_PROCEES_DATA;
             break;
         }

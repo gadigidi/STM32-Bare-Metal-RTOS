@@ -61,17 +61,21 @@ void user_button_change_frequency_task(void *arg) {
     static uint32_t time_now = 0;
     (void) time_now;
     while (1) {
-        os_wait_sem(&user_button_sem);
+        bool success = os_wait_sem(&user_button_sem);
+        if (success){
+            time_now = timebase_show_ms(); //Just for debug
+            os_delay(30); //De-baunce
+            time_now = timebase_show_ms(); //Just for debug
 
-        time_now = timebase_show_ms(); //Just for debug
-        os_delay(30); //De-baunce
-        time_now = timebase_show_ms(); //Just for debug
+            led_delay = ((led_delay + 100) > 600) ? 300 : (led_delay + 100);
+            counter++;
 
-        led_delay = ((led_delay + 100) > 600) ? 300 : (led_delay + 100);
-        counter++;
-
-        exti_clean_flag(USER_BTN_PIN); //Clear HW flag
-        isr_enable_interrupt(EXTI15_10_IRQn); //Re-enable ISR
+            exti_clean_flag(USER_BTN_PIN); //Clear HW flag
+            isr_enable_interrupt(EXTI15_10_IRQn); //Re-enable ISR
+        }
+        else{
+            os_delay(10);
+        }
     }
 }
 

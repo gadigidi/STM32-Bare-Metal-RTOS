@@ -14,7 +14,7 @@ int main(void){
 
     i2c_master_init();
 
-    os_run();
+    os_start();
     
     while (1) {
 

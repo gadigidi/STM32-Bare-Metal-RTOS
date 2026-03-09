@@ -2,6 +2,8 @@
 #include "tasks.h"
 #include "timebase.h"
 #include "isr.h"
+#include "lfsr_simple.h"
+#include "buffer.h"
 #include "stm32f446xx.h"
 #include <stdint.h>
 #include <stddef.h>
@@ -20,7 +22,6 @@ typedef struct {
 //////////////////
 semaphore_t user_button_sem;
 semaphore_t i2c_master_done_sem;
-semaphore_t i2c_slave_done_sem;
 
 
 //////////////////
@@ -31,7 +32,7 @@ volatile tcb_t *current_tcb;
 
 static uint32_t stack[USER_TASKS_NUM][OS_STACK_DEPTH]; //Idle task have deifferent stack depth
 static uint32_t idle_stack[OS_IDLE_STACK_DEPTH];
-static bool task_ready[USER_TASKS_NUM];
+static ring_buf_t prioritize_task_ready[8];
 static int current_task;
 
 //////////////////
@@ -91,37 +92,60 @@ uint32_t* stack_frame_init(uint32_t *sp, uint32_t *pc, uint32_t arg) {
     return stack_line_ptr->sp;
 }
 
-void os_config_priorities(void) {
+void os_set_isr_priorities(void) {
     isr_set_priority(TIM2_IRQn, 2); //TIM2 Systick
     isr_set_pendsv_priority(15);
 }
 
 void os_init(void) {
-    os_config_priorities();
+    os_set_isr_priorities();
 
-    for (int i = 0; i < OS_TASKS_NUM; i++) {
-        tcb[i].index = i;
+    //Initialize priority tables and waiting lists in semaphores
+    for (int pri = 0; pri < OS_NUM_PRIORITIES; pri++){
+        buf_init(&prioritize_task_ready[pri]); //Initialize task ready list
+        buf_init(&user_button_sem.prioritize_waiting_list[pri]); //Initialize waiting list in semaphore
+        buf_init(&i2c_master_done_sem.prioritize_waiting_list[pri]); //Initialize waiting list in semaphore
+    }
 
-        uint32_t pc_uint =
-                (i < OS_IDLE_TASK) ?
-                        (uint32_t) task_entry[i] : (uint32_t) &os_idle_task;
+    for (int id = 0; id < OS_TASKS_NUM; id++) {
+        tcb[id].id = id;
+
+        uint32_t pc_uint = (id < OS_IDLE_TASK) ? (uint32_t) task_entry[id] : (uint32_t) &os_idle_task;
         pc_uint |= 1; //Thumb bit
         uint32_t *pc = (uint32_t*) pc_uint;
 
-        uint32_t *sp =
-                (i < OS_IDLE_TASK) ?
-                        &stack[i][OS_STACK_DEPTH - 1] :
-                        &idle_stack[OS_STACK_DEPTH - 1];
+        uint32_t *sp = (id < OS_IDLE_TASK) ? &stack[id][OS_STACK_DEPTH - 1] : &idle_stack[OS_STACK_DEPTH - 1];
         uint32_t sp_uint = (uint32_t) sp & ~(7U); //Align sp to 8
         sp = (uint32_t*) sp_uint;
 
-        uint32_t arg = (uint32_t) task_arg[i];
+        //Load R0 = arg
+        uint32_t arg;
+        if (id < 3){
+            arg = task_arg[id];
+        }
+        else{
+            arg = (uint32_t) sp; //To help debug stacks for stub tasks
+        }
+        //uint32_t arg = (uint32_t) task_arg[id];
         sp = stack_frame_init(sp, pc, arg);
 
-        tcb[i].sp = sp;
-        tcb[i].state = OS_READY;
-        tcb[i].sem = NULL;
-        task_ready[i] = 1;
+        int pri = id % 8;
+        tcb[id].sp = sp;
+        tcb[id].state = TASK_READY;
+        tcb[id].base_pri = pri;
+        tcb[id].pri = pri;
+        tcb[id].sem = NULL;
+        tcb[id].mutex = NULL;
+
+        if ((id != OS_FIRST_TASK) && (id != OS_IDLE_TASK)){
+            //First task will start run automatically, not through the ready list
+            //Idle task don't need to be queued
+            bool success = push_buf(&prioritize_task_ready[pri], id);
+            if (success){
+                tcb[id].state = TASK_QUEUED;
+            }
+        }
+
         //stack_debug(sp);
     }
 }
@@ -129,23 +153,51 @@ void os_init(void) {
 void os_delay(uint32_t delay_ms) {
     current_tcb->delay_start = timebase_show_ms();
     current_tcb->delay_ms = delay_ms;
-    current_tcb->state = OS_SLEEP;
+    current_tcb->state = TASK_SLEEP;
 
     SCB->ICSR |= PENDSVSET; //Assert PendSV
 }
 
-void os_wait_sem(semaphore_t *semaphore) {
+bool os_wait_sem(semaphore_t *semaphore) {
     static bool need_resched = 0;
+    bool success;
     __disable_irq();
     if (semaphore->count > 0) {
-        if (!(semaphore->sem_tasks_list)) { //If this task is only consumer of this semaphore
-            semaphore->count--;
+        semaphore->count--;
+        return 1;
+    }
+    else { //No semaphore pending
+        success = push_buf(&semaphore->prioritize_waiting_list[current_tcb->pri], current_tcb->id);
+        if (success){
+            current_tcb->sem = semaphore;
+            current_tcb->state = TASK_WAIT;
+            need_resched = 1;
         }
-    } else { //No semaphore pending
-        semaphore->sem_tasks_list |= (1 << (current_tcb->index));
-        current_tcb->sem = semaphore;
-        current_tcb->state = OS_WAIT;
-        need_resched = 1;
+    }
+    if (need_resched) {
+        SCB->ICSR |= PENDSVSET; //Assert PendSV
+    }
+    __enable_irq();
+    return success; //Will return 1 if task is successfully on the waiting list, or 0 if not
+}
+
+void os_give_sem(semaphore_t *semaphore) {
+    static bool need_resched = 0;
+    __disable_irq();
+    for (int pri = 7; pri >= 0; pri--){
+        uint8_t id = pop_buf(&semaphore->prioritize_waiting_list[pri]);
+        if (id != BUF_EMPTY){
+            bool success = push_buf(&prioritize_task_ready[pri], id);
+            if (success){
+                tcb[id].sem = NULL;
+                tcb[id].state = TASK_QUEUED;
+                need_resched = 1;
+                break;
+            }
+        }
+    }
+    if (!need_resched){ //Empty wait list. No task consumed semaphore
+        semaphore->count++;
     }
     __enable_irq();
 
@@ -154,44 +206,34 @@ void os_wait_sem(semaphore_t *semaphore) {
     }
 }
 
-void os_give_sem(semaphore_t *semaphore) {
-    semaphore->count++;
-
-    SCB->ICSR |= PENDSVSET; //Assert PendSV
-}
-
 void os_switch(void) {
     uint32_t time_now = timebase_show_ms();
-
-    for (int i = 0; i < USER_TASKS_NUM; i++) {
-        if (tcb[i].state == OS_SLEEP) { //If task is in delay state
-            if ((time_now - tcb[i].delay_start) >= tcb[i].delay_ms) {
-                tcb[i].state = OS_READY;
-                task_ready[i] = 1;
-            } else { //If time_delay didn't passed yet
-                task_ready[i] = 0;
+    if (tcb[current_task].state == TASK_RUN){
+        tcb[current_task].state = TASK_READY;
+    }
+    for (int id = 0; id < USER_TASKS_NUM; id++) {
+        bool success;
+        if (tcb[id].state == TASK_SLEEP) { //If task is in delay state
+            if ((time_now - tcb[id].delay_start) >= tcb[id].delay_ms) {
+                tcb[id].state = TASK_READY;
             }
-        } else if (tcb[i].state == OS_WAIT) { //If task is in wait for semaphore state
-            if ((tcb[i].sem->count) > 0) {
-                if (!(tcb[i].sem->sem_tasks_list &= ~(1 << i))) { //If this task is only consumer
-                    tcb[i].sem->count--;
-                }
-                tcb[i].sem->sem_tasks_list &= ~(1 << i); //Remove task from semaphore list
-                tcb[i].state = OS_READY;
-                task_ready[i] = 1;
-            } else { //If no pending semaphore for this task
-                task_ready[i] = 0;
+        }
+        if (tcb[id].state == TASK_READY){
+            success = push_buf(&prioritize_task_ready[tcb[id].pri], id);
+            if (success){
+                tcb[id].state = TASK_QUEUED;
             }
         }
     }
 
+    //Find the highest priority ready task
     bool user_task_run = 0;
-    for (int i = 0; i < USER_TASKS_NUM; i++) {
-        int next_task = (current_task + i + 1) % USER_TASKS_NUM;
-        if (task_ready[next_task] == 1) {
+    for (int pri = 7; pri >= 0; pri--){
+        uint8_t next_task = pop_buf(&prioritize_task_ready[pri]);
+        if (next_task != BUF_EMPTY){
             current_tcb = &tcb[next_task];
             current_task = next_task;
-            tcb[current_task].state = OS_RUN;
+            tcb[current_task].state = TASK_RUN;
             user_task_run = 1;
             break;
         }
@@ -199,14 +241,14 @@ void os_switch(void) {
     if (!user_task_run) {
         current_tcb = &tcb[OS_IDLE_TASK]; //Run idle task if no other task ready
         current_task = OS_IDLE_TASK;
-        tcb[current_task].state = OS_RUN;
+        tcb[current_task].state = TASK_RUN;
     }
 }
 
-void os_run(void) {
+void os_start(void) {
     tcb[OS_FIRST_TASK].sp += 8; //Remove SW frame from first task
     current_tcb = &tcb[OS_FIRST_TASK];
-    current_tcb->state = OS_RUN;
+    current_tcb->state = TASK_RUN;
     timebase_init();
     __asm volatile (
             "SVC 0 \n"
