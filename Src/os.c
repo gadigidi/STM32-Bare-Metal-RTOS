@@ -27,6 +27,7 @@ semaphore_t i2c_master_done_sem;
 //////////////////
 /// variables ////
 //////////////////
+uint32_t counter[OS_TASKS_NUM];
 static tcb_t tcb[OS_TASKS_NUM];
 volatile tcb_t *current_tcb;
 
@@ -119,14 +120,7 @@ void os_init(void) {
         sp = (uint32_t*) sp_uint;
 
         //Load R0 = arg
-        uint32_t arg;
-        if (id < 3){
-            arg = task_arg[id];
-        }
-        else{
-            arg = (uint32_t) sp; //To help debug stacks for stub tasks
-        }
-        //uint32_t arg = (uint32_t) task_arg[id];
+        uint32_t arg = (uint32_t) task_arg[id];
         sp = stack_frame_init(sp, pc, arg);
 
         int pri = id % 8;
@@ -146,7 +140,7 @@ void os_init(void) {
             }
         }
 
-        //stack_debug(sp);
+        stack_debug(sp);
     }
 }
 
@@ -254,4 +248,18 @@ void os_start(void) {
             "SVC 0 \n"
     );
 }
+
+//Use for debug fairness and starvation
+void os_update_counter (int id){
+    static uint32_t time_now = 0;
+    static uint32_t counter[OS_TASKS_NUM];
+    time_now = timebase_show_ms();
+    if (time_now < OS_SAMPLE_TIME_MS){
+        counter[id]++;
+    }
+
+    int breakpoint;
+    (void) breakpoint;
+}
+
 

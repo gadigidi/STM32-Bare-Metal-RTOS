@@ -15,6 +15,8 @@
 
 #define OS_NUM_PRIORITIES       8
 
+#define OS_SAMPLE_TIME_MS       10000
+
 typedef enum {
     TASK_READY, TASK_QUEUED, TASK_RUN, TASK_SLEEP, TASK_WAIT,
 } os_state_t;
@@ -44,7 +46,8 @@ typedef struct {
 
 
 extern volatile tcb_t *current_tcb;
-//extern volatile tcb[OS_TASKS_NUM];
+
+extern uint32_t counter[OS_TASKS_NUM];
 
 //////////////////
 /// semaphores ///
@@ -62,5 +65,6 @@ void os_delay(uint32_t delay_ms);
 void os_start(void);
 bool os_wait_sem(semaphore_t *semaphore);
 void os_give_sem(semaphore_t *semaphore);
+void os_update_counter(int id);
 
 #endif /* OS_H_ */

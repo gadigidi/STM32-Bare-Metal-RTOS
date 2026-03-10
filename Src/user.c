@@ -49,6 +49,7 @@ void user_auto_toggle_led_task(void *arg) {
     static uint32_t time_now = 0;
     (void) time_now;
     while (1) {
+        os_update_counter(current_tcb->id);
         user_toggle_led();
         counter++;
         time_now = timebase_show_ms();
@@ -61,6 +62,7 @@ void user_button_change_frequency_task(void *arg) {
     static uint32_t time_now = 0;
     (void) time_now;
     while (1) {
+        os_update_counter(current_tcb->id);
         bool success = os_wait_sem(&user_button_sem);
         if (success){
             time_now = timebase_show_ms(); //Just for debug

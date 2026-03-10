@@ -1,7 +1,7 @@
 #ifndef TASKS_H_
 #define TASKS_H_
 
-#define USER_TASKS_NUM          3 //User should change this
+#define USER_TASKS_NUM          16 //User should change this
 #define FIRST_TASK              0
 
 typedef void (*task_entry_t) (void *arg);

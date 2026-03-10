@@ -50,6 +50,16 @@ The project focuses on how a Cortex-M actually works: manual scheduling, context
 
 ---
 
+## Priority Mechanism
+
+The kernel also includes basic semaphore support and priority-based scheduling.
+
+To illustrate scheduler behavior, several lightweight stub tasks were added with different priority levels.
+
+Tasks with the same priority are scheduled in a fair manner to avoid starvation within a priority level.
+
+---
+
 ## Interrupt-Driven I2C Master (Write-Only, V1)
 
 The kernel is validated using a realistic peripheral workload: an **ISR-driven I2C Master FSM**.
