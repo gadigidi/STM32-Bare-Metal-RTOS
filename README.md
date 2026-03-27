@@ -2,7 +2,7 @@
 
 > *Context switching is an identity swap performed right under the CPU’s nose.*
 
-![os switch context scheme](Documents/OS_scheme.jpg)
+![rtos switch context scheme](Documents/RTOS_scheme.jpg)
 
 ## Overview
 
