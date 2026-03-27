@@ -1,4 +1,5 @@
 #include "i2c.h"
+#include "i2c_agents.h"
 #include "isr.h"
 #include "lfsr_simple.h"
 #include "stm32f446xx.h"
@@ -10,16 +11,16 @@ void i2c_enable_irq(I2C_TypeDef *I2C) {
     I2C->CR2 |= I2C_EVENT_INT_EN;
     I2C->CR2 |= I2C_TXE_INT_EN;
     if (I2C == I2C1){
-        isr_enable_interrupt(I2C1_EV_IRQn);
-        isr_enable_interrupt(I2C1_ER_IRQn);
+        isr_enable(I2C1_EV_IRQn);
+        isr_enable(I2C1_ER_IRQn);
     }
     if (I2C == I2C2){
-        isr_enable_interrupt(I2C2_EV_IRQn);
-        isr_enable_interrupt(I2C2_ER_IRQn);
+        isr_enable(I2C2_EV_IRQn);
+        isr_enable(I2C2_ER_IRQn);
     }
     if (I2C == I2C3){
-        isr_enable_interrupt(I2C3_EV_IRQn);
-        isr_enable_interrupt(I2C3_ER_IRQn);
+        isr_enable(I2C3_EV_IRQn);
+        isr_enable(I2C3_ER_IRQn);
     }
 }
 
@@ -29,17 +30,6 @@ void i2c_sw_reset (I2C_TypeDef *I2C) {
     __NOP(); //Wait 1 clk cycle
     I2C->CR1 &= ~I2C_SWRST;
     I2C->CR1 |= I2C_PE; //Re-enable peripheral
-}
-
-void i2c_recovery (I2C_TypeDef *I2C) {
-    //i2c_master_clear_busy(I2C);
-    i2c_sw_reset(I2C);
-
-    //Reconfigurations after soft reset
-    I2C->CR1 &= ~I2C_PE; //Disable peripheral
-    i2c_config_clk(I2C);
-    I2C->CR1 |= I2C_PE; //Enable Peripheral
-    i2c_enable_irq(I2C);
 }
 
 void i2c_config_clk (I2C_TypeDef *I2C) {
@@ -65,6 +55,9 @@ void i2c_start_transaction(I2C_TypeDef *I2C){
     I2C->CR1 |= I2C_START;
 }
 
+void i2c_recovery(I2C_TypeDef *I2C){
+    i2c1_recovery(); //TODO generic recovery function
+}
 
 void i2c_send_tx_byte(I2C_TypeDef *I2C, uint8_t tx_byte){
     I2C->DR = tx_byte;

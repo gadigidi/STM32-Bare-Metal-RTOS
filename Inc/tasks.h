@@ -9,8 +9,9 @@ extern task_entry_t task_entry [USER_TASKS_NUM];
 
 typedef void *task_arg_t;
 extern task_arg_t task_arg[USER_TASKS_NUM];
+extern int task_pri[USER_TASKS_NUM];
 
-void os_idle_task(void *arg);
-void os_error_task(void *arg);
+void rtos_idle_task(void *arg);
+void rtos_error_task(void *arg);
 
 #endif /* TASKS_H_ */

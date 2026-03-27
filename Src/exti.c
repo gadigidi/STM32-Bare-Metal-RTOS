@@ -15,7 +15,7 @@ void exti_init(void) {
     RCC->APB2ENR |= (1U << 14);
 }
 
-void exti_enable_irq(char gpio_letter, int line, int isr_flag) {
+void exti_enable_irq(char gpio_letter, int line, int irqn) {
 
     //Select GPIOA as IRQ source for EXTI, because the RC522 IRQ connected to PA1
     int reg = line / 4;
@@ -34,6 +34,6 @@ void exti_enable_irq(char gpio_letter, int line, int isr_flag) {
 
     //Clean old PR before anabling
     exti_clean_flag(line);
-    isr_enable_interrupt(isr_flag);
+    isr_enable(irqn);
 
 }

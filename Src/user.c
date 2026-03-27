@@ -1,5 +1,5 @@
+#include "rtos.h"
 #include "user.h"
-#include "os.h"
 #include "gpio.h"
 #include "exti.h"
 #include "timebase.h"
@@ -13,10 +13,10 @@ void user_init(void) {
     gpio_init(GPIOCEN);
 
     // PA5 as OUTPUT
-    gpio_pin_mode(GPIOA, 5, GPIO_MODE_OUTPUT);
+    gpio_pin_mode(GPIOA, USER_LED_PIN, GPIO_MODE_OUTPUT);
 
     // PC13 as INPUT
-    gpio_pin_mode(GPIOC, 13, GPIO_MODE_INPUT);
+    gpio_pin_mode(GPIOC, USER_BTN_PIN, GPIO_MODE_INPUT);
 
     //Set EXTI13 for GPIOC
     exti_init();
@@ -49,11 +49,10 @@ void user_auto_toggle_led_task(void *arg) {
     static uint32_t time_now = 0;
     (void) time_now;
     while (1) {
-        os_update_counter(current_tcb->id);
         user_toggle_led();
         counter++;
         time_now = timebase_show_ms();
-        os_delay(led_delay);
+        rtos_delay(led_delay);
     }
 }
 
@@ -62,21 +61,28 @@ void user_button_change_frequency_task(void *arg) {
     static uint32_t time_now = 0;
     (void) time_now;
     while (1) {
-        os_update_counter(current_tcb->id);
-        bool success = os_wait_sem(&user_button_sem);
+        time_now = timebase_show_ms(); //Just for debug
+        bool success = rtos_take_sem(&user_button_sem);
+        time_now = timebase_show_ms(); //Just for debug
+
+        //if task successfully assigned to sem waiting list then
+        //the task will actually get to this line only after button will be pressed
+        //in that case success == 1
         if (success){
             time_now = timebase_show_ms(); //Just for debug
-            os_delay(30); //De-baunce
+            rtos_delay(30); //De-baunce
             time_now = timebase_show_ms(); //Just for debug
 
             led_delay = ((led_delay + 100) > 600) ? 300 : (led_delay + 100);
             counter++;
 
             exti_clean_flag(USER_BTN_PIN); //Clear HW flag
-            isr_enable_interrupt(EXTI15_10_IRQn); //Re-enable ISR
+            isr_enable(EXTI15_10_IRQn); //Re-enable ISR
         }
+        //if sem waiting list wasn't available the task will get to this line immediately
+        //in that case success == 0. then task will sleep for 10 ms
         else{
-            os_delay(10);
+            rtos_delay(10);
         }
     }
 }

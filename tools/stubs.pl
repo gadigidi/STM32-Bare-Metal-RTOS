@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 
 my $STUBS_NUM = 13;
-my $STUB_FIRST_TASK = 3;
+my $STUB_FIRST_TASK = 4;
 
 for (my $i = 0; $i<$STUBS_NUM; $i++){
     my $id = $i+$STUB_FIRST_TASK;
@@ -18,8 +18,8 @@ void stub_task_${id}(void *arg)
         //The higher the task priority, the less it releases the CPU
         //Demonstrates fairness vs. starvation of lower-priority tasks
         uint16_t delay = (lfsr_next()%${range})+1; //delay between 1-${range}ms
-        os_update_counter(current_tcb->id);
-        os_delay(delay);
+        //rtos_update_counter(current_tcb->id);
+        rtos_delay(delay);
         time_now = timebase_show_ms();
         (void) time_now;
     }

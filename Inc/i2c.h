@@ -1,9 +1,9 @@
 #ifndef I2C_H_
 #define I2C_H_
 
+#include "rtos.h"
 #include "stm32f446xx.h"
 #include <stdint.h>
-#include "os.h"
 
 typedef enum {
     I2C_MASTER,
@@ -19,8 +19,10 @@ typedef enum {
 typedef struct {
     uint8_t *tx_buffer;
     volatile uint8_t tx_length;
+    int tx_byte_index;
     uint8_t *rx_buffer;
     volatile uint8_t rx_length;
+    int rx_byte_index;
     uint8_t addr;
     i2c_trans_type_t trans_type;
 } i2c_ctx_t;

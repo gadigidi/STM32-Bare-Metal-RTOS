@@ -1,7 +1,7 @@
-#include "os.h"
+#include "rtos.h"
 #include "user.h"
-#include "i2c.h"
-#include "i2c_m.h"
+#include "i2c_agents.h"
+#include "spi_agents.h"
 #include <stdio.h>
 #include <stdint.h>
 #include "stm32f446xx.h"
@@ -10,11 +10,13 @@
 int main(void){
     user_init(); //Enable user LED and user BTN
 
-    os_init();
+    rtos_init();
 
-    i2c_master_init();
+    i2c1_init();
 
-    os_start();
+    spi2_init();
+
+    rtos_start();
     
     while (1) {
 
