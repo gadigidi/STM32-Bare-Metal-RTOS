@@ -40,8 +40,8 @@ For architecture diagrams and FSM visualizations, see the [Documents](Documents/
 ### Tasks
 - LED task (visible execution)
 - Button task (EXTI-driven + debounce handling)
-- **Interrupt-driven SPI task (loopback validation, high-rate transactions)**
-- Interrupt-driven I2C Master task (write-only, V1)
+- **SPI task (loopback validation, high-rate transactions)**
+- I2C Master task (write-only, V1)
 - Idle task (WFI-based)
 
 ---
@@ -71,34 +71,27 @@ Lightweight stub tasks are used to validate scheduling behavior under different 
 
 ![SPI Driver FSM](Documents/SPI_MASTER_DRVR_FSM.jpg)
 
-The SPI driver is implemented as an interrupt-driven FSM, progressing on TXE/RXNE events.
+The SPI driver is implemented as an FSM progressing on TXE/RXNE events.
 
-The system is primarily validated using a high-rate **ISR-driven SPI driver**,  
-running continuous transactions in loopback configuration (MOSI → MISO).
+The system is validated using a high-rate SPI workload in loopback (MOSI → MISO),  
+stressing scheduling and exposing system limits.
 
-This setup stresses the system under heavy interrupt load and exposes real scheduling constraints.
-
-### Characteristics
-
-- Fully interrupt-driven (**TXE / RXNE**)
-- Continuous transaction flow initiated from task context
-- ISR-driven progression without polling
-- Loopback used for deterministic validation
-
-The SPI workload revealed system-level effects such as interrupt storms,  
-scheduler starvation, and sensitivity to interrupt priority configuration.
+Observed effects include interrupt storms, scheduler starvation,  
+and sensitivity to interrupt priority configuration.
 
 ### Dual-FSM Architecture
 
-The design follows a strict separation between:
+The design separates responsibilities between two state machines:
 
 - **Task-level FSM**  
-  Defines *what* transaction to perform
+  Defines the transaction.  
+  Prepares data and blocks under the scheduler.
 
 - **Driver/ISR-level FSM**  
-  Defines *how* the hardware progresses through the transaction
+  Executes the transaction on the hardware lines.  
+  Advances tx/rx and signals completion.
 
-This separation decouples scheduling from hardware execution while preserving full control over timing.
+This separation decouples scheduling from hardware execution while preserving timing control.
 
 > *On microcontrollers, parallelism is an art.*
 
