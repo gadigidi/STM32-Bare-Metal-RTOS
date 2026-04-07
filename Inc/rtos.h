@@ -6,16 +6,16 @@
 #include <stdbool.h>
 #include "buffer.h"
 
-#define OS_TASKS_NUM            USER_TASKS_NUM + 1
-#define OS_IDLE_TASK            USER_TASKS_NUM //Idle task always last
-#define OS_FIRST_TASK           FIRST_TASK
+#define RTOS_TASKS_NUM            USER_TASKS_NUM + 1
+#define RTOS_IDLE_TASK            USER_TASKS_NUM //Idle task always last
+#define RTOS_FIRST_TASK           FIRST_TASK
 
-#define OS_STACK_DEPTH          256
-#define OS_IDLE_STACK_DEPTH     64
+#define RTOS_STACK_DEPTH          256
+#define RTOS_IDLE_STACK_DEPTH     64
 
-#define OS_NUM_PRIORITIES       8
+#define RTOS_NUM_PRIORITIES       8
 
-#define OS_SAMPLE_TIME_MS       30000
+#define RTOS_SAMPLE_TIME_MS       20000
 
 typedef enum {
     TASK_READY, TASK_QUEUED, TASK_RUN, TASK_SLEEP, TASK_WAIT,
@@ -24,7 +24,7 @@ typedef enum {
 typedef struct {
     volatile uint8_t count;
     uint8_t max_count;
-    ring_buf_t prioritize_waiting_list[OS_NUM_PRIORITIES];
+    ring_buf_t prioritize_waiting_list[RTOS_NUM_PRIORITIES];
 } semaphore_t;
 
 typedef struct {
@@ -50,7 +50,7 @@ typedef struct {
 ///////////////////////////
 extern volatile tcb_t *current_tcb;
 
-extern uint32_t counter[OS_TASKS_NUM];
+extern uint32_t counter[RTOS_TASKS_NUM];
 //semaphores
 extern semaphore_t user_button_sem;
 extern semaphore_t i2c1_done_sem;

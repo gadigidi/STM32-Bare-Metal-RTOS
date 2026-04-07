@@ -17,7 +17,7 @@ void i2c_m_task (void *arg) {
         switch (*i2c_cb->master_task_state) {
         case I2C_M_TASK_IDLE: {
             uint32_t time_now = timebase_show_ms(); //Debug
-            rtos_delay(20);
+            rtos_delay(5);
             time_now = timebase_show_ms(); //Debug
             (void) time_now;
             uint8_t event = lfsr_next() % 2;

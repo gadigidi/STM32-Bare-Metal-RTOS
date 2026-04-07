@@ -37,12 +37,12 @@ mutex_t spi2_mutex;
 //////////////////
 /// variables ////
 //////////////////
-//uint32_t counter[OS_TASKS_NUM];
-static tcb_t tcb[OS_TASKS_NUM];
+//uint32_t counter[RTOS_TASKS_NUM];
+static tcb_t tcb[RTOS_TASKS_NUM];
 volatile tcb_t *current_tcb;
 
-static uint32_t stack[USER_TASKS_NUM][OS_STACK_DEPTH];
-static uint32_t idle_stack[OS_IDLE_STACK_DEPTH]; //Idle task have different stack depth
+static uint32_t stack[USER_TASKS_NUM][RTOS_STACK_DEPTH];
+static uint32_t idle_stack[RTOS_IDLE_STACK_DEPTH]; //Idle task have different stack depth
 static ring_buf_t prioritize_task_ready[8];
 static int current_task;
 
@@ -112,7 +112,7 @@ void rtos_init(void) {
     rtos_set_isr_priorities();
 
     //Initialize priority tables and waiting lists in semaphores
-    for (int pri = 0; pri < OS_NUM_PRIORITIES; pri++){
+    for (int pri = 0; pri < RTOS_NUM_PRIORITIES; pri++){
         buf_init(&prioritize_task_ready[pri]); //Initialize task ready list
 
         //Each semaphore need to be initialize here
@@ -129,14 +129,14 @@ void rtos_init(void) {
     //Each mutex lock state need to be initialize here
     rtos_mutex_init(&spi2_mutex);
 
-    for (int id = 0; id < OS_TASKS_NUM; id++) {
+    for (int id = 0; id < RTOS_TASKS_NUM; id++) {
         tcb[id].id = id;
 
-        uint32_t pc_uint = (id < OS_IDLE_TASK) ? (uint32_t) task_entry[id] : (uint32_t) &rtos_idle_task;
+        uint32_t pc_uint = (id < RTOS_IDLE_TASK) ? (uint32_t) task_entry[id] : (uint32_t) &rtos_idle_task;
         pc_uint |= 1; //Thumb bit
         uint32_t *pc = (uint32_t*) pc_uint;
 
-        uint32_t *sp = (id < OS_IDLE_TASK) ? &stack[id][OS_STACK_DEPTH - 1] : &idle_stack[OS_STACK_DEPTH - 1];
+        uint32_t *sp = (id < RTOS_IDLE_TASK) ? &stack[id][RTOS_STACK_DEPTH - 1] : &idle_stack[RTOS_STACK_DEPTH - 1];
         uint32_t sp_uint = (uint32_t) sp & ~(7U); //Align sp to 8
         sp = (uint32_t*) sp_uint;
 
@@ -152,7 +152,7 @@ void rtos_init(void) {
         tcb[id].sem = NULL;
         tcb[id].mutex = NULL;
 
-        if ((id != OS_FIRST_TASK) && (id != OS_IDLE_TASK)){
+        if ((id != RTOS_FIRST_TASK) && (id != RTOS_IDLE_TASK)){
             //First task will start run automatically, not through the ready list
             //Idle task don't need to be queued
             bool success = push_buf(&prioritize_task_ready[pri], id);
@@ -291,16 +291,16 @@ void rtos_switch(void) {
         }
     }
     if (!user_task_run) {
-        current_tcb = &tcb[OS_IDLE_TASK]; //Run idle task if no other task ready
-        current_task = OS_IDLE_TASK;
+        current_tcb = &tcb[RTOS_IDLE_TASK]; //Run idle task if no other task ready
+        current_task = RTOS_IDLE_TASK;
         tcb[current_task].state = TASK_RUN;
     }
     rtos_update_counter(current_task);
 }
 
 void rtos_start(void) {
-    tcb[OS_FIRST_TASK].sp += 8; //Remove SW frame from first task
-    current_tcb = &tcb[OS_FIRST_TASK];
+    tcb[RTOS_FIRST_TASK].sp += 8; //Remove SW frame from first task
+    current_tcb = &tcb[RTOS_FIRST_TASK];
     current_tcb->state = TASK_RUN;
     timebase_init();
     __asm volatile (
@@ -311,9 +311,11 @@ void rtos_start(void) {
 //Use for debug fairness and starvation
 void rtos_update_counter (int id){
     static uint32_t time_now = 0;
-    static uint32_t rtos_counter[OS_TASKS_NUM];
+    static uint32_t num_switches = 0;
+    static uint32_t rtos_counter[RTOS_TASKS_NUM];
     time_now = timebase_show_ms();
-    if (time_now < OS_SAMPLE_TIME_MS){
+    if (time_now < RTOS_SAMPLE_TIME_MS){
+        num_switches++;
         rtos_counter[id]++;
     }
 

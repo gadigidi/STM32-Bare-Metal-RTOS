@@ -2,9 +2,9 @@
 
 > *Context switching is an identity swap performed right under the CPU’s nose.*
 
-![rtos switch context scheme](Documents/RTOS_scheme.jpg)
-
 ## Overview
+
+![Architecture Scheme](Documents/Architecture.jpg)
 
 A **from-scratch bare-metal RTOS kernel** running on **STM32 NUCLEO-F446RE (Cortex-M4)**.
 
@@ -14,7 +14,7 @@ manual scheduling, context switching, stack orchestration, and interrupt-driven 
 
 The focus is on understanding the system **from the exception level down to the stack frame**.
 
-For architecture diagrams and FSM visualizations, see the [Documents](Documents/) directory.
+For architecture diagrams and FSM visualizations: [Documents](Documents/).
 
 ---
 
@@ -29,8 +29,6 @@ For architecture diagrams and FSM visualizations, see the [Documents](Documents/
 
 ---
 
-## Architecture
-
 ### RTOS Core
 - TIM2 as system tick (1 kHz time base)
 - SVC used for controlled first task start
@@ -41,12 +39,17 @@ For architecture diagrams and FSM visualizations, see the [Documents](Documents/
 - LED task (visible execution)
 - Button task (EXTI-driven + debounce handling)
 - **SPI task (loopback validation, high-rate transactions)**
-- I2C Master task (write-only, V1)
+- I2C Master task (write-only)
 - Idle task (WFI-based)
 
 ---
 
-## Context Switching Model
+## Context Switching (Cortex-M Deep Dive)
+
+The system performs manual context switching using PendSV,  
+with explicit control over PSP and exception stack frames.
+
+![rtos switch context scheme](Documents/RTOS_scheme.jpg)
 
 - Hardware-stacked registers: **R0–R3, R12, LR, PC, xPSR**
 - Software-saved registers: **R4–R11**
@@ -61,9 +64,9 @@ For architecture diagrams and FSM visualizations, see the [Documents](Documents/
 
 - Priority-based preemptive scheduling  
 - Fair round-robin within equal priority levels  
-- Semaphore-based signaling (event-style with pending awareness)  
+- Binary Semaphores used for signaling ISR-to-task signaling and driver completion events
 
-Lightweight stub tasks are used to validate scheduling behavior under different loads.
+**Lightweight stub tasks are used to validate scheduling behavior under different priorities.**
 
 ---
 
@@ -97,7 +100,7 @@ This separation decouples scheduling from hardware execution while preserving ti
 
 ---
 
-## Interrupt-Driven I2C Master (Write-Only, V1)
+## Interrupt-Driven I2C Master (Write-Only)
 
 As an additional validation path, the kernel includes an  
 **ISR-driven I2C Master FSM**.

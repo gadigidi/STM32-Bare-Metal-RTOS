@@ -1,5 +1,5 @@
-#include "rtos.h"
 #include "tasks.h"
+#include "rtos.h"
 #include "stub_tasks.h"
 #include "user.h"
 #include "i2c_m.h"
@@ -16,7 +16,7 @@
 //TASK 1: user_button_toggle_led_task()
 //TASK 2: i2c_master_task
 //TASK_3: spi_master_task
-//TASKS 4-15: stub tasks with different priorities
+//TASKS 4-20: stub tasks with different priorities
 
 //User should fill this with tasks names
 task_entry_t task_entry [USER_TASKS_NUM] = {
@@ -24,6 +24,12 @@ task_entry_t task_entry [USER_TASKS_NUM] = {
         &user_button_change_frequency_task,
         &i2c_m_task,
         &spi_m_task,
+
+        //Stub tasks
+        &stub_task_0,
+        &stub_task_1,
+        &stub_task_2,
+        &stub_task_3,
         &stub_task_4,
         &stub_task_5,
         &stub_task_6,
@@ -44,6 +50,12 @@ task_arg_t task_arg[USER_TASKS_NUM] = {
         0,
         &i2c1_cb,
         &spi2_cb,
+
+        //Stub tasks
+        0,
+        0,
+        0,
+        0,
         0,
         0,
         0,
@@ -60,10 +72,16 @@ task_arg_t task_arg[USER_TASKS_NUM] = {
 
 //User should fill this with tasks priorities in same order
 int task_pri[USER_TASKS_NUM] = {
-        5,//led
+        3,//led
         2,//button
-        5,//i2c
-        5,//spi
+        4,//i2c
+        4,//spi
+
+        //Stub tasks
+        0,
+        1,
+        2,
+        3,
         4,
         5,
         6,
@@ -77,6 +95,7 @@ int task_pri[USER_TASKS_NUM] = {
         6,
         7,
 };
+
 ///////////////////////////////////////////
 // NOTE: idle_task should not be removed //
 ///////////////////////////////////////////

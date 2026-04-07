@@ -4,6 +4,9 @@
 #define STUB_TASKS_NUM          13
 #define STUB_FIRST_TASK         3
 
+void stub_task_0 (void *arg);
+void stub_task_1 (void *arg);
+void stub_task_2 (void *arg);
 void stub_task_3 (void *arg);
 void stub_task_4 (void *arg);
 void stub_task_5 (void *arg);

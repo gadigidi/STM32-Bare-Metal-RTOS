@@ -1,5 +1,5 @@
-#include "rtos.h"
 #include "stub_tasks.h"
+#include "rtos.h"
 #include "timebase.h"
 #include "lfsr_simple.h"
 #include "stack_debug.h"
@@ -8,16 +8,65 @@
 #include <stddef.h>
 
 
+void stub_task_0(void *arg)
+{
+    static uint32_t time_now = 0;
+    //Priority is: 0. Set in tasks.c
+    while (1){
+        time_now = timebase_show_ms();
+        uint16_t delay = 1 + (lfsr_next()%3); //delay between 1-3ms
+        rtos_delay(delay);
+        time_now = timebase_show_ms();
+        (void) time_now;
+    }
+}
+
+void stub_task_1(void *arg)
+{
+    static uint32_t time_now = 0;
+    //Priority is: 1. Set in tasks.c
+    while (1){
+        time_now = timebase_show_ms();
+        uint16_t delay = 1 + (lfsr_next()%3); //delay between 1-3ms
+        rtos_delay(delay);
+        time_now = timebase_show_ms();
+        (void) time_now;
+    }
+}
+
+void stub_task_2(void *arg)
+{
+    static uint32_t time_now = 0;
+    //Priority is: 2. Set in tasks.c
+    while (1){
+        time_now = timebase_show_ms();
+        uint16_t delay = 1 + (lfsr_next()%3); //delay between 1-3ms
+        rtos_delay(delay);
+        time_now = timebase_show_ms();
+        (void) time_now;
+    }
+}
+
+void stub_task_3(void *arg)
+{
+    static uint32_t time_now = 0;
+    //Priority is: 3. Set in tasks.c
+    while (1){
+        time_now = timebase_show_ms();
+        uint16_t delay = 1 + (lfsr_next()%3); //delay between 1-3ms
+        rtos_delay(delay);
+        time_now = timebase_show_ms();
+        (void) time_now;
+    }
+}
+
 void stub_task_4(void *arg)
 {
     static uint32_t time_now = 0;
-    static uint8_t pri = 4;
+    //Priority is: 4. Set in tasks.c
     while (1){
         time_now = timebase_show_ms();
-        //The higher the task priority, the less it releases the CPU
-        //Demonstrates fairness vs. starvation of lower-priority tasks
-        uint16_t delay = (lfsr_next()%6)+1; //delay between 1-6ms
-        //rtos_update_counter(current_tcb->id);
+        uint16_t delay = 1 + (lfsr_next()%3); //delay between 1-3ms
         rtos_delay(delay);
         time_now = timebase_show_ms();
         (void) time_now;
@@ -27,13 +76,10 @@ void stub_task_4(void *arg)
 void stub_task_5(void *arg)
 {
     static uint32_t time_now = 0;
-    static uint8_t pri = 5;
+    //Priority is: 5. Set in tasks.c
     while (1){
         time_now = timebase_show_ms();
-        //The higher the task priority, the less it releases the CPU
-        //Demonstrates fairness vs. starvation of lower-priority tasks
-        uint16_t delay = (lfsr_next()%5)+1; //delay between 1-5ms
-        //rtos_update_counter(current_tcb->id);
+        uint16_t delay = 1 + (lfsr_next()%3); //delay between 1-3ms
         rtos_delay(delay);
         time_now = timebase_show_ms();
         (void) time_now;
@@ -43,13 +89,10 @@ void stub_task_5(void *arg)
 void stub_task_6(void *arg)
 {
     static uint32_t time_now = 0;
-    static uint8_t pri = 6;
+    //Priority is: 6. Set in tasks.c
     while (1){
         time_now = timebase_show_ms();
-        //The higher the task priority, the less it releases the CPU
-        //Demonstrates fairness vs. starvation of lower-priority tasks
-        uint16_t delay = (lfsr_next()%4)+1; //delay between 1-4ms
-        //rtos_update_counter(current_tcb->id);
+        uint16_t delay = 1 + (lfsr_next()%3); //delay between 1-3ms
         rtos_delay(delay);
         time_now = timebase_show_ms();
         (void) time_now;
@@ -59,13 +102,10 @@ void stub_task_6(void *arg)
 void stub_task_7(void *arg)
 {
     static uint32_t time_now = 0;
-    static uint8_t pri = 7;
+    //Priority is: 7. Set in tasks.c
     while (1){
         time_now = timebase_show_ms();
-        //The higher the task priority, the less it releases the CPU
-        //Demonstrates fairness vs. starvation of lower-priority tasks
-        uint16_t delay = (lfsr_next()%3)+1; //delay between 1-3ms
-        //rtos_update_counter(current_tcb->id);
+        uint16_t delay = 1 + (lfsr_next()%3); //delay between 1-3ms
         rtos_delay(delay);
         time_now = timebase_show_ms();
         (void) time_now;
@@ -75,13 +115,10 @@ void stub_task_7(void *arg)
 void stub_task_8(void *arg)
 {
     static uint32_t time_now = 0;
-    static uint8_t pri = 0;
+    //Priority is: 0. Set in tasks.c
     while (1){
         time_now = timebase_show_ms();
-        //The higher the task priority, the less it releases the CPU
-        //Demonstrates fairness vs. starvation of lower-priority tasks
-        uint16_t delay = (lfsr_next()%10)+1; //delay between 1-10ms
-        //rtos_update_counter(current_tcb->id);
+        uint16_t delay = 1 + (lfsr_next()%3); //delay between 1-3ms
         rtos_delay(delay);
         time_now = timebase_show_ms();
         (void) time_now;
@@ -91,13 +128,10 @@ void stub_task_8(void *arg)
 void stub_task_9(void *arg)
 {
     static uint32_t time_now = 0;
-    static uint8_t pri = 1;
+    //Priority is: 1. Set in tasks.c
     while (1){
         time_now = timebase_show_ms();
-        //The higher the task priority, the less it releases the CPU
-        //Demonstrates fairness vs. starvation of lower-priority tasks
-        uint16_t delay = (lfsr_next()%9)+1; //delay between 1-9ms
-        //rtos_update_counter(current_tcb->id);
+        uint16_t delay = 1 + (lfsr_next()%3); //delay between 1-3ms
         rtos_delay(delay);
         time_now = timebase_show_ms();
         (void) time_now;
@@ -107,13 +141,10 @@ void stub_task_9(void *arg)
 void stub_task_10(void *arg)
 {
     static uint32_t time_now = 0;
-    static uint8_t pri = 2;
+    //Priority is: 2. Set in tasks.c
     while (1){
         time_now = timebase_show_ms();
-        //The higher the task priority, the less it releases the CPU
-        //Demonstrates fairness vs. starvation of lower-priority tasks
-        uint16_t delay = (lfsr_next()%8)+1; //delay between 1-8ms
-        //rtos_update_counter(current_tcb->id);
+        uint16_t delay = 1 + (lfsr_next()%3); //delay between 1-3ms
         rtos_delay(delay);
         time_now = timebase_show_ms();
         (void) time_now;
@@ -123,13 +154,10 @@ void stub_task_10(void *arg)
 void stub_task_11(void *arg)
 {
     static uint32_t time_now = 0;
-    static uint8_t pri = 3;
+    //Priority is: 3. Set in tasks.c
     while (1){
         time_now = timebase_show_ms();
-        //The higher the task priority, the less it releases the CPU
-        //Demonstrates fairness vs. starvation of lower-priority tasks
-        uint16_t delay = (lfsr_next()%7)+1; //delay between 1-7ms
-        //rtos_update_counter(current_tcb->id);
+        uint16_t delay = 1 + (lfsr_next()%3); //delay between 1-3ms
         rtos_delay(delay);
         time_now = timebase_show_ms();
         (void) time_now;
@@ -139,13 +167,10 @@ void stub_task_11(void *arg)
 void stub_task_12(void *arg)
 {
     static uint32_t time_now = 0;
-    static uint8_t pri = 4;
+    //Priority is: 4. Set in tasks.c
     while (1){
         time_now = timebase_show_ms();
-        //The higher the task priority, the less it releases the CPU
-        //Demonstrates fairness vs. starvation of lower-priority tasks
-        uint16_t delay = (lfsr_next()%6)+1; //delay between 1-6ms
-        //rtos_update_counter(current_tcb->id);
+        uint16_t delay = 1 + (lfsr_next()%3); //delay between 1-3ms
         rtos_delay(delay);
         time_now = timebase_show_ms();
         (void) time_now;
@@ -155,13 +180,10 @@ void stub_task_12(void *arg)
 void stub_task_13(void *arg)
 {
     static uint32_t time_now = 0;
-    static uint8_t pri = 5;
+    //Priority is: 5. Set in tasks.c
     while (1){
         time_now = timebase_show_ms();
-        //The higher the task priority, the less it releases the CPU
-        //Demonstrates fairness vs. starvation of lower-priority tasks
-        uint16_t delay = (lfsr_next()%5)+1; //delay between 1-5ms
-        //rtos_update_counter(current_tcb->id);
+        uint16_t delay = 1 + (lfsr_next()%3); //delay between 1-3ms
         rtos_delay(delay);
         time_now = timebase_show_ms();
         (void) time_now;
@@ -171,13 +193,10 @@ void stub_task_13(void *arg)
 void stub_task_14(void *arg)
 {
     static uint32_t time_now = 0;
-    static uint8_t pri = 6;
+    //Priority is: 6. Set in tasks.c
     while (1){
         time_now = timebase_show_ms();
-        //The higher the task priority, the less it releases the CPU
-        //Demonstrates fairness vs. starvation of lower-priority tasks
-        uint16_t delay = (lfsr_next()%4)+1; //delay between 1-4ms
-        //rtos_update_counter(current_tcb->id);
+        uint16_t delay = 1 + (lfsr_next()%3); //delay between 1-3ms
         rtos_delay(delay);
         time_now = timebase_show_ms();
         (void) time_now;
@@ -187,29 +206,10 @@ void stub_task_14(void *arg)
 void stub_task_15(void *arg)
 {
     static uint32_t time_now = 0;
-    static uint8_t pri = 7;
+    //Priority is: 7. Set in tasks.c
     while (1){
         time_now = timebase_show_ms();
-        //The higher the task priority, the less it releases the CPU
-        //Demonstrates fairness vs. starvation of lower-priority tasks
-        uint16_t delay = (lfsr_next()%3)+1; //delay between 1-3ms
-        //rtos_update_counter(current_tcb->id);
-        rtos_delay(delay);
-        time_now = timebase_show_ms();
-        (void) time_now;
-    }
-}
-
-void stub_task_16(void *arg)
-{
-    static uint32_t time_now = 0;
-    static uint8_t pri = 0;
-    while (1){
-        time_now = timebase_show_ms();
-        //The higher the task priority, the less it releases the CPU
-        //Demonstrates fairness vs. starvation of lower-priority tasks
-        uint16_t delay = (lfsr_next()%10)+1; //delay between 1-10ms
-        //rtos_update_counter(current_tcb->id);
+        uint16_t delay = 1 + (lfsr_next()%3); //delay between 1-3ms
         rtos_delay(delay);
         time_now = timebase_show_ms();
         (void) time_now;

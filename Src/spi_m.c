@@ -43,7 +43,7 @@ void spi_m_task(void *arg) {
         switch (*spi_cb->spi_task_state) {
         case SPI_M_TASK_IDLE: {
             uint32_t time_now = timebase_show_ms(); //Debug
-            rtos_delay(3);
+            rtos_delay(1);
             time_now = timebase_show_ms(); //Debug
             (void) time_now;
             uint8_t event = lfsr_next() % 10; //Get random event
