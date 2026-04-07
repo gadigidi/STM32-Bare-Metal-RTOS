@@ -129,10 +129,3 @@ The goal is not just to make it run — but to understand **why it runs, and whe
 - SPI2  
 - I2C1  
 
----
-
-## Status
-
-Actively evolving.  
-Features are added only after full architectural validation.
-
