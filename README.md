@@ -4,7 +4,7 @@
 
 ## Overview
 
-![Architecture Scheme](Documents/Architecture.jpg)
+![Architecture Scheme](Documents/Architecture.png)
 
 A **from-scratch bare-metal RTOS kernel** running on **STM32 NUCLEO-F446RE (Cortex-M4)**.
 
@@ -13,6 +13,13 @@ manual scheduling, context switching, stack separation, and interrupt-driven exe
 **without FreeRTOS, CMSIS-OS, or external abstractions.**
 
 For architecture diagrams and FSM visualizations: [Documents](Documents/).
+
+## Key Idea
+
+Context switching adds a new dimension to execution.
+
+Instead of a single flat control flow, the system becomes a set of independent execution contexts.  
+Each task can be written in a natural sequential style, while the runtime controls when execution moves between them.
 
 ---
 
