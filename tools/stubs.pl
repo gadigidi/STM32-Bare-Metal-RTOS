@@ -15,9 +15,10 @@ void stub_task_${id}(void *arg)
     //Priority is: ${pri}. Set in tasks.c
     while (1){
         time_now = timebase_show_ms();
-        uint16_t delay = 1 + (lfsr_next()%3); //delay between 1-3ms
+        uint16_t delay = 1 + (lfsr_next()%STUB_DELAY);
         rtos_delay(delay);
         time_now = timebase_show_ms();
+        for (int i = 0; i< STUB_LOOP; i++){}; //Add some runtime delay
         (void) time_now;
     }
 }

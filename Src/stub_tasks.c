@@ -14,9 +14,10 @@ void stub_task_0(void *arg)
     //Priority is: 0. Set in tasks.c
     while (1){
         time_now = timebase_show_ms();
-        uint16_t delay = 1 + (lfsr_next()%3); //delay between 1-3ms
+        uint16_t delay = 1 + (lfsr_next()%STUB_DELAY);
         rtos_delay(delay);
         time_now = timebase_show_ms();
+        for (int i = 0; i< STUB_LOOP; i++){}; //Add some runtime delay
         (void) time_now;
     }
 }
@@ -27,9 +28,10 @@ void stub_task_1(void *arg)
     //Priority is: 1. Set in tasks.c
     while (1){
         time_now = timebase_show_ms();
-        uint16_t delay = 1 + (lfsr_next()%3); //delay between 1-3ms
+        uint16_t delay = 1 + (lfsr_next()%STUB_DELAY);
         rtos_delay(delay);
         time_now = timebase_show_ms();
+        for (int i = 0; i< STUB_LOOP; i++){}; //Add some runtime delay
         (void) time_now;
     }
 }
@@ -40,9 +42,10 @@ void stub_task_2(void *arg)
     //Priority is: 2. Set in tasks.c
     while (1){
         time_now = timebase_show_ms();
-        uint16_t delay = 1 + (lfsr_next()%3); //delay between 1-3ms
+        uint16_t delay = 1 + (lfsr_next()%STUB_DELAY);
         rtos_delay(delay);
         time_now = timebase_show_ms();
+        for (int i = 0; i< STUB_LOOP; i++){}; //Add some runtime delay
         (void) time_now;
     }
 }
@@ -53,9 +56,10 @@ void stub_task_3(void *arg)
     //Priority is: 3. Set in tasks.c
     while (1){
         time_now = timebase_show_ms();
-        uint16_t delay = 1 + (lfsr_next()%3); //delay between 1-3ms
+        uint16_t delay = 1 + (lfsr_next()%STUB_DELAY);
         rtos_delay(delay);
         time_now = timebase_show_ms();
+        for (int i = 0; i< STUB_LOOP; i++){}; //Add some runtime delay
         (void) time_now;
     }
 }
@@ -66,9 +70,10 @@ void stub_task_4(void *arg)
     //Priority is: 4. Set in tasks.c
     while (1){
         time_now = timebase_show_ms();
-        uint16_t delay = 1 + (lfsr_next()%3); //delay between 1-3ms
+        uint16_t delay = 1 + (lfsr_next()%STUB_DELAY);
         rtos_delay(delay);
         time_now = timebase_show_ms();
+        for (int i = 0; i< STUB_LOOP; i++){}; //Add some runtime delay
         (void) time_now;
     }
 }
@@ -79,9 +84,10 @@ void stub_task_5(void *arg)
     //Priority is: 5. Set in tasks.c
     while (1){
         time_now = timebase_show_ms();
-        uint16_t delay = 1 + (lfsr_next()%3); //delay between 1-3ms
+        uint16_t delay = 1 + (lfsr_next()%STUB_DELAY);
         rtos_delay(delay);
         time_now = timebase_show_ms();
+        for (int i = 0; i< STUB_LOOP; i++){}; //Add some runtime delay
         (void) time_now;
     }
 }
@@ -92,9 +98,10 @@ void stub_task_6(void *arg)
     //Priority is: 6. Set in tasks.c
     while (1){
         time_now = timebase_show_ms();
-        uint16_t delay = 1 + (lfsr_next()%3); //delay between 1-3ms
+        uint16_t delay = 1 + (lfsr_next()%STUB_DELAY);
         rtos_delay(delay);
         time_now = timebase_show_ms();
+        for (int i = 0; i< STUB_LOOP; i++){}; //Add some runtime delay
         (void) time_now;
     }
 }
@@ -105,9 +112,10 @@ void stub_task_7(void *arg)
     //Priority is: 7. Set in tasks.c
     while (1){
         time_now = timebase_show_ms();
-        uint16_t delay = 1 + (lfsr_next()%3); //delay between 1-3ms
+        uint16_t delay = 1 + (lfsr_next()%STUB_DELAY);
         rtos_delay(delay);
         time_now = timebase_show_ms();
+        for (int i = 0; i< STUB_LOOP; i++){}; //Add some runtime delay
         (void) time_now;
     }
 }
@@ -118,9 +126,10 @@ void stub_task_8(void *arg)
     //Priority is: 0. Set in tasks.c
     while (1){
         time_now = timebase_show_ms();
-        uint16_t delay = 1 + (lfsr_next()%3); //delay between 1-3ms
+        uint16_t delay = 1 + (lfsr_next()%STUB_DELAY);
         rtos_delay(delay);
         time_now = timebase_show_ms();
+        for (int i = 0; i< STUB_LOOP; i++){}; //Add some runtime delay
         (void) time_now;
     }
 }
@@ -131,9 +140,10 @@ void stub_task_9(void *arg)
     //Priority is: 1. Set in tasks.c
     while (1){
         time_now = timebase_show_ms();
-        uint16_t delay = 1 + (lfsr_next()%3); //delay between 1-3ms
+        uint16_t delay = 1 + (lfsr_next()%STUB_DELAY);
         rtos_delay(delay);
         time_now = timebase_show_ms();
+        for (int i = 0; i< STUB_LOOP; i++){}; //Add some runtime delay
         (void) time_now;
     }
 }
@@ -144,9 +154,10 @@ void stub_task_10(void *arg)
     //Priority is: 2. Set in tasks.c
     while (1){
         time_now = timebase_show_ms();
-        uint16_t delay = 1 + (lfsr_next()%3); //delay between 1-3ms
+        uint16_t delay = 1 + (lfsr_next()%STUB_DELAY);
         rtos_delay(delay);
         time_now = timebase_show_ms();
+        for (int i = 0; i< STUB_LOOP; i++){}; //Add some runtime delay
         (void) time_now;
     }
 }
@@ -157,9 +168,10 @@ void stub_task_11(void *arg)
     //Priority is: 3. Set in tasks.c
     while (1){
         time_now = timebase_show_ms();
-        uint16_t delay = 1 + (lfsr_next()%3); //delay between 1-3ms
+        uint16_t delay = 1 + (lfsr_next()%STUB_DELAY);
         rtos_delay(delay);
         time_now = timebase_show_ms();
+        for (int i = 0; i< STUB_LOOP; i++){}; //Add some runtime delay
         (void) time_now;
     }
 }
@@ -170,9 +182,10 @@ void stub_task_12(void *arg)
     //Priority is: 4. Set in tasks.c
     while (1){
         time_now = timebase_show_ms();
-        uint16_t delay = 1 + (lfsr_next()%3); //delay between 1-3ms
+        uint16_t delay = 1 + (lfsr_next()%STUB_DELAY);
         rtos_delay(delay);
         time_now = timebase_show_ms();
+        for (int i = 0; i< STUB_LOOP; i++){}; //Add some runtime delay
         (void) time_now;
     }
 }
@@ -183,9 +196,10 @@ void stub_task_13(void *arg)
     //Priority is: 5. Set in tasks.c
     while (1){
         time_now = timebase_show_ms();
-        uint16_t delay = 1 + (lfsr_next()%3); //delay between 1-3ms
+        uint16_t delay = 1 + (lfsr_next()%STUB_DELAY);
         rtos_delay(delay);
         time_now = timebase_show_ms();
+        for (int i = 0; i< STUB_LOOP; i++){}; //Add some runtime delay
         (void) time_now;
     }
 }
@@ -196,9 +210,10 @@ void stub_task_14(void *arg)
     //Priority is: 6. Set in tasks.c
     while (1){
         time_now = timebase_show_ms();
-        uint16_t delay = 1 + (lfsr_next()%3); //delay between 1-3ms
+        uint16_t delay = 1 + (lfsr_next()%STUB_DELAY);
         rtos_delay(delay);
         time_now = timebase_show_ms();
+        for (int i = 0; i< STUB_LOOP; i++){}; //Add some runtime delay
         (void) time_now;
     }
 }
@@ -209,9 +224,11 @@ void stub_task_15(void *arg)
     //Priority is: 7. Set in tasks.c
     while (1){
         time_now = timebase_show_ms();
-        uint16_t delay = 1 + (lfsr_next()%3); //delay between 1-3ms
+        uint16_t delay = 1 + (lfsr_next()%STUB_DELAY);
         rtos_delay(delay);
         time_now = timebase_show_ms();
+        for (int i = 0; i< STUB_LOOP; i++){}; //Add some runtime delay
         (void) time_now;
     }
 }
+

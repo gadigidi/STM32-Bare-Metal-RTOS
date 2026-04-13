@@ -97,8 +97,8 @@ The kernel also includes an **ISR-driven I2C Master FSM**.
 
 ## Debugging & Insights
 
-- Interrupt storms can starve the scheduler if peripheral IRQs are not tightly controlled.  
+- Correct exception stack layout is mandatory for reliable context switching.
+- Interrupt storms can starve the scheduler if peripheral IRQs are not tightly controlled.
 - Preemption alone does not ensure fairness — tasks must yield or block to avoid CPU starvation.
-- Correct exception stack layout is mandatory for reliable context switching.  
 - Breakpoints change system timing and hardware behavior (e.g., RXNE flag), so execution may not match real conditions.
 

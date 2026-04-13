@@ -1,8 +1,10 @@
 #ifndef STUB_TASKS_H_
 #define STUB_TASKS_H_
 
-#define STUB_TASKS_NUM          13
-#define STUB_FIRST_TASK         3
+#define STUB_TASKS_NUM          16
+#define STUB_FIRST_TASK         4
+#define STUB_DELAY              3
+#define STUB_LOOP               10
 
 void stub_task_0 (void *arg);
 void stub_task_1 (void *arg);
