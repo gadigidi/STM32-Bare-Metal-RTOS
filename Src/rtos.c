@@ -258,10 +258,15 @@ void rtos_mutex_unlock (mutex_t *mutex){
     __enable_irq();
 }
 
+static uint32_t switch_debug = 0;
 void rtos_switch(void) {
     uint32_t time_now = timebase_show_ms();
+    __disable_irq();
     if (tcb[current_task].state == TASK_RUN){
         tcb[current_task].state = TASK_READY;
+    }
+    else{
+        switch_debug++;
     }
     for (int id = 0; id < USER_TASKS_NUM; id++) {
         bool success;
@@ -295,6 +300,7 @@ void rtos_switch(void) {
         current_task = RTOS_IDLE_TASK;
         tcb[current_task].state = TASK_RUN;
     }
+    __enable_irq();
     rtos_update_counter(current_task);
 }
 

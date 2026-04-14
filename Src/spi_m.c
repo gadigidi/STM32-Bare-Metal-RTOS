@@ -183,7 +183,7 @@ void spi_m_txrx_driver(spi_m_control_block_t *spi_cb) {
         case SPI_M_DRVR_READ_DR: {
             int byte_index = spi_cb->ctx->byte_index;
             uint8_t rx_byte = SPI->DR;
-            spi_cb->ctx->rx_buffer[byte_index] = rx_byte; //Reda DR
+            spi_cb->ctx->rx_buffer[byte_index] = rx_byte; //Read DR
             *spi_cb->spi_driver_state = SPI_M_DRVR_BYTE_DONE;
             continue; //Continue to next state in this call
         }

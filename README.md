@@ -42,7 +42,7 @@ Each task can be written in a natural sequential style, while the runtime contro
 
 ## Context Switching
 
-![rtos switch context scheme](Documents/RTOS_scheme.jpg)
+![rtos switch context scheme](Documents/RTOS_scheme.png)
 
 - Hardware-stacked registers: **R0–R3, R12, LR, PC, xPSR**
 - Software-saved registers: **R4–R11**
@@ -58,14 +58,13 @@ Each task can be written in a natural sequential style, while the runtime contro
 - Priority-based preemptive scheduling  
 - Fair round-robin within equal priority levels  
 - Binary Semaphores used for ISR-to-task signaling and driver completion events
+- Critical sections ensure safe state transitions
 
-**Lightweight stub tasks are used to validate scheduling behavior under different priorities.**
+**Multiple lightweight stub tasks are used to validate scheduling behavior under different priorities.**
 
 ---
 
 ## Interrupt-Driven SPI (Primary Workload)
-
-![SPI Driver FSM](Documents/SPI_MASTER_DRVR_FSM.jpg)
 
 The SPI driver is implemented as an FSM driven by TXE/RXNE IRQ events.
 
@@ -73,6 +72,8 @@ The system is validated using a high-rate SPI loopback workload (MOSI → MISO)
 to observe scheduling behavior under heavy interrupt load.
 
 ### Dual-FSM Architecture
+
+![SPI DUAL FSM](Documents/SPI_DUAL_FSM_ARCHITECTURE.png)
 
 The design separates responsibilities between two state machines:
 
@@ -92,6 +93,7 @@ The kernel also includes an **ISR-driven I2C Master FSM**.
 
 - Task prepares transaction parameters
 - ISR advances strictly on hardware events (**SB / ADDR / TXE / BTF**)
+- Explicit error-handling path with recovery (bus errors, SW reset)
 
 ---
 
@@ -100,5 +102,6 @@ The kernel also includes an **ISR-driven I2C Master FSM**.
 - Correct exception stack layout is mandatory for reliable context switching.
 - Interrupt storms can starve the scheduler if peripheral IRQs are not tightly controlled.
 - Preemption alone does not ensure fairness — tasks must yield or block to avoid CPU starvation.
-- Breakpoints change system timing and hardware behavior (e.g., RXNE flag), so execution may not match real conditions.
+- Breakpoints alter system timing and behavior (e.g., RXNE), and must be used with care.
+- In interrupt-driven FSMs, one event is not always one step — some events must drive multiple state transitions.
 
