@@ -8,6 +8,7 @@
 #include <stdint.h>
 #include <stddef.h>
 #include "stack_debug.h"
+#include "dwt.h"
 
 ///////////////////
 ///  typdefs    ///
@@ -258,10 +259,12 @@ void rtos_mutex_unlock (mutex_t *mutex){
     __enable_irq();
 }
 
-static uint32_t switch_debug = 0;
+uint32_t switch_debug = 0;
+uint32_t switch_start, switch_finish, cycle_count;
 void rtos_switch(void) {
     uint32_t time_now = timebase_show_ms();
     __disable_irq();
+    switch_start = dwt_count();
     if (tcb[current_task].state == TASK_RUN){
         tcb[current_task].state = TASK_READY;
     }
@@ -300,6 +303,8 @@ void rtos_switch(void) {
         current_task = RTOS_IDLE_TASK;
         tcb[current_task].state = TASK_RUN;
     }
+    switch_finish = dwt_count();
+    cycle_count = switch_finish - switch_start;
     __enable_irq();
     rtos_update_counter(current_task);
 }

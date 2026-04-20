@@ -106,6 +106,7 @@ void rtos_idle_task(void *arg){
         rtos_update_counter(current_tcb->id);
         time_now = timebase_show_ms();
         (void) time_now;
+        __WFI();
         //rtos_update_counter(OS_IDLE_TASK);
         //Dead end
     }

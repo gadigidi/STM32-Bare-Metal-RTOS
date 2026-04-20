@@ -112,7 +112,6 @@ void SPI2_IRQHandler (void){
 //uint32_t debug_lr_after_switch;
 //uint32_t debug_psp_after_switch;
 __attribute__((naked)) void PendSV_Handler(void){
-
     __asm volatile (
             /*
             "MRS R0, PSP \n" //R0 = LR
