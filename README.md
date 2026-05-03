@@ -62,6 +62,8 @@ Each task can be written in a natural sequential style, while the runtime contro
 
 **Multiple lightweight stub tasks are used to validate scheduling behavior under different priorities.**
 
+**An experimental linked-list based scheduler is available in the `sleeping-list-experiment` branch.**
+
 ---
 
 ## Interrupt-Driven SPI (Primary Workload)
