@@ -62,6 +62,27 @@ Each task can be written in a natural sequential style, while the runtime contro
 
 **Multiple lightweight stub tasks are used to validate scheduling behavior under different priorities.**
 
+### Sleeping List (Experimental)
+
+An alternative design was implemented using a linked list to track only sleeping tasks.  
+The goal was to reduce unnecessary checks by evaluating only tasks waiting on time events.
+
+**Expected Advantage:**
+- Reduce scheduler workload from O(N) → O(K), where K is the number of sleeping tasks
+- Avoid scanning active or ready tasks
+
+### Observations
+
+In practice, the linked-list approach introduced several performance and system-level drawbacks:
+
+- Increased latency due to pointer traversal (pointer chasing)
+- Costly insert/remove operations
+- Poor cache locality (non-contiguous memory access)
+- Non-deterministic timing behavior
+- Overhead from dynamic memory management
+
+For the tested system (with a small, fixed number of tasks), the overhead outweighed the theoretical benefits.
+
 ---
 
 ## Interrupt-Driven SPI (Primary Workload)

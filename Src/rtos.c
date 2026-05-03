@@ -4,6 +4,7 @@
 #include "isr.h"
 #include "lfsr_simple.h"
 #include "buffer.h"
+#include "list.h"
 #include "stm32f446xx.h"
 #include <stdint.h>
 #include <stddef.h>
@@ -34,6 +35,12 @@ semaphore_t spi2_done_sem;
 //Also need to be declared as extern in rtos_
 mutex_t spi2_mutex;
 
+/////////////
+/// lists ///
+/////////////
+static node_t nodes[RTOS_TASKS_NUM];
+static list_t sleeping_list;
+static list_t prioritize_ready_lists[RTOS_NUM_PRIORITIES];
 
 //////////////////
 /// variables ////
@@ -44,12 +51,15 @@ volatile tcb_t *current_tcb;
 
 static uint32_t stack[USER_TASKS_NUM][RTOS_STACK_DEPTH];
 static uint32_t idle_stack[RTOS_IDLE_STACK_DEPTH]; //Idle task have different stack depth
-static ring_buf_t prioritize_task_ready[8];
+//static ring_buf_t prioritize_ready_lists[8];
+
 static int current_task;
 
 //////////////////
 /// functions ////
 //////////////////
+
+
 stack_line_t* push_stack(stack_line_t *stack_line_ptr) {
     stack_line_ptr->sp--;
     *stack_line_ptr->sp = stack_line_ptr->data;
@@ -112,9 +122,12 @@ void rtos_set_isr_priorities(void) {
 void rtos_init(void) {
     rtos_set_isr_priorities();
 
-    //Initialize priority tables and waiting lists in semaphores
+    //Each linked-list need to be initialized here
+    create_list(&sleeping_list);
+
+    //Initialize priority linked-lists and waiting lists in semaphores
     for (int pri = 0; pri < RTOS_NUM_PRIORITIES; pri++){
-        buf_init(&prioritize_task_ready[pri]); //Initialize task ready list
+        create_list(&prioritize_ready_lists[pri]);
 
         //Each semaphore need to be initialize here
         buf_init(&user_button_sem.prioritize_waiting_list[pri]); //Initialize waiting list in semaphore
@@ -153,13 +166,13 @@ void rtos_init(void) {
         tcb[id].sem = NULL;
         tcb[id].mutex = NULL;
 
+        tcb[id].node = &nodes[id]; //Assign static node to node pointer in tcb
+        list_node_init(tcb[id].node); //Initialize node for each tcb
+
         if ((id != RTOS_FIRST_TASK) && (id != RTOS_IDLE_TASK)){
             //First task will start run automatically, not through the ready list
             //Idle task don't need to be queued
-            bool success = push_buf(&prioritize_task_ready[pri], id);
-            if (success){
-                tcb[id].state = TASK_QUEUED;
-            }
+            list_add_node(&prioritize_ready_lists[pri], tcb[id].node, id, READY_LIST);
         }
 
         stack_debug(sp);
@@ -167,9 +180,15 @@ void rtos_init(void) {
 }
 
 void rtos_delay(uint32_t delay_ms) {
+    __disable_irq();
     current_tcb->delay_start = timebase_show_ms();
     current_tcb->delay_ms = delay_ms;
     current_tcb->state = TASK_SLEEP;
+    uint8_t id = current_tcb->id;
+    uint8_t pri = current_tcb->pri;
+    list_remove_node(&prioritize_ready_lists[pri], tcb[id].node);
+    list_add_node(&sleeping_list, tcb[id].node, id, SLEEPING_LIST); //Add task to sleeping linked list
+    __enable_irq();
 
     SCB->ICSR |= PENDSVSET; //Assert PendSV
 }
@@ -211,13 +230,11 @@ bool rtos_give_sem(semaphore_t *sem) {
     for (int pri = 7; pri >= 0; pri--){
         uint8_t id = pop_buf(&sem->prioritize_waiting_list[pri]);
         if (id != BUF_EMPTY){
-            bool success = push_buf(&prioritize_task_ready[pri], id);
-            if (success){
-                tcb[id].state = TASK_QUEUED;
-                tcb[id].mutex = NULL;
-                need_resched = 1;
-                break;
-            }
+            tcb[id].state = TASK_READY;
+            list_add_node(&prioritize_ready_lists[pri], tcb[id].node, id, READY_LIST);
+            tcb[id].mutex = NULL;
+            need_resched = 1;
+            break;
         }
     }
     if (!need_resched){ //Empty wait list. No task consumed semaphore
@@ -260,39 +277,60 @@ void rtos_mutex_unlock (mutex_t *mutex){
 }
 
 uint32_t switch_debug = 0;
-uint32_t switch_start, switch_finish, cycle_count;
+uint32_t t0, t1, t2;
 void rtos_switch(void) {
+    static uint32_t switch_start, switch_middle, switch_finish, cycle_count1, cycle_count2;
     uint32_t time_now = timebase_show_ms();
+    uint8_t current_pri = tcb[current_task].pri;
     __disable_irq();
     switch_start = dwt_count();
     if (tcb[current_task].state == TASK_RUN){
         tcb[current_task].state = TASK_READY;
+        if (current_task != RTOS_IDLE_TASK){
+            t0 = dwt_count();
+            list_add_node(&prioritize_ready_lists[current_pri], tcb[current_task].node, current_task, READY_LIST);
+            t1 = dwt_count();
+            t2 = t1 - t0;
+        }
     }
     else{
         switch_debug++;
     }
-    for (int id = 0; id < USER_TASKS_NUM; id++) {
-        bool success;
-        if (tcb[id].state == TASK_SLEEP) { //If task is in delay state
-            if ((time_now - tcb[id].delay_start) >= tcb[id].delay_ms) {
-                tcb[id].state = TASK_READY;
+
+    node_t *node = sleeping_list.head;
+    int i = 0;
+    int size = sleeping_list.size;
+    while (i < size){ //Run on the sleeping linked-list
+        uint8_t id = node->data;
+        uint8_t pri = tcb[id].pri;
+        node_t *next_node = node->next; //This must set before the if because node->next can be initialized
+        if ((time_now - tcb[id].delay_start) >= tcb[id].delay_ms) {
+            if (node == NULL) {
+                int breakpoint = 0;
+                breakpoint++;
             }
+            uint8_t data = list_remove_node(&sleeping_list, tcb[id].node);
+            (void) data;
+            tcb[id].state = TASK_READY;
+            list_add_node(&prioritize_ready_lists[pri], tcb[id].node, id, READY_LIST);
         }
-        if (tcb[id].state == TASK_READY){
-            success = push_buf(&prioritize_task_ready[tcb[id].pri], id);
-            if (success){
-                tcb[id].state = TASK_QUEUED;
-            }
-        }
+        node = next_node;
+        i++;
     }
 
+    switch_middle = dwt_count();
+    cycle_count1 = switch_middle - switch_start;
     //Find the highest priority ready task
     bool user_task_run = 0;
-    for (int pri = 7; pri >= 0; pri--){
-        uint8_t next_task = pop_buf(&prioritize_task_ready[pri]);
-        if (next_task != BUF_EMPTY){
-            current_tcb = &tcb[next_task];
+    for (int pri = RTOS_NUM_PRIORITIES-1; pri >= 0; pri--){
+        if (prioritize_ready_lists[pri].size > 0){
+            t0 = dwt_count();
+            uint8_t next_task = list_remove_node(&prioritize_ready_lists[pri], prioritize_ready_lists[pri].head);
+            t1 = dwt_count();
+            t2 = t1 - t0;
+            //if (next_task != BUF_EMPTY){
             current_task = next_task;
+            current_tcb = &tcb[current_task];
             tcb[current_task].state = TASK_RUN;
             user_task_run = 1;
             break;
@@ -304,7 +342,7 @@ void rtos_switch(void) {
         tcb[current_task].state = TASK_RUN;
     }
     switch_finish = dwt_count();
-    cycle_count = switch_finish - switch_start;
+    cycle_count2 = switch_finish - switch_middle;
     __enable_irq();
     rtos_update_counter(current_task);
 }

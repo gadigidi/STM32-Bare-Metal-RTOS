@@ -16,7 +16,7 @@ void buf_init (ring_buf_t *buf){
 bool push_buf (ring_buf_t *buf, uint8_t data){
     if (!buf->full){
         buf->array[buf->head] = data;
-        buf->head = (buf->head+1) % BUF_SIZE;
+        buf->head = (buf->head+1) & (BUF_SIZE-1); //Equivalent to "% BUF_SIZE". Saving cycles
         buf->size++;
         buf->empty = 0;
         if (buf->size == 4){
@@ -35,7 +35,7 @@ bool push_buf (ring_buf_t *buf, uint8_t data){
 uint8_t pop_buf (ring_buf_t *buf){
     if (!buf->empty){
         uint8_t data = buf->array[buf->tail];
-        buf->tail = (buf->tail+1) % BUF_SIZE;
+        buf->tail = (buf->tail+1) & (BUF_SIZE-1);//Equivalent to "% BUF_SIZE". Saving cycles
         buf->size--;
         buf->full = 0;
         if (buf->size == 0){

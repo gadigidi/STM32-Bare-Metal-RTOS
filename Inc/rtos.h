@@ -5,6 +5,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include "buffer.h"
+#include "list.h"
 
 #define RTOS_TASKS_NUM            USER_TASKS_NUM + 1
 #define RTOS_IDLE_TASK            USER_TASKS_NUM //Idle task always last
@@ -18,7 +19,7 @@
 #define RTOS_SAMPLE_TIME_MS       20000
 
 typedef enum {
-    TASK_READY, TASK_QUEUED, TASK_RUN, TASK_SLEEP, TASK_WAIT,
+    TASK_READY, TASK_RUN, TASK_SLEEP, TASK_WAIT,
 } rtos_state_t;
 
 typedef struct {
@@ -42,6 +43,7 @@ typedef struct {
     volatile uint8_t pri; //Actual priority
     semaphore_t *sem;
     mutex_t *mutex;
+    node_t *node;
 } tcb_t;
 
 
